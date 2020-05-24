@@ -12,7 +12,14 @@ export class App extends Component {
   }
 
   async selectPlan(event) {
-    var result = await fetch("data/PCOD.txt");
+    var value = event.target.value;
+
+    if (value === "-- select --") {
+      alert("select plan");
+      return false;
+    }
+    var url = `data/${event.target.value}.txt`;
+    var result = await fetch(url);
     var data = await (await result).text();
     this.setState({
       data: data,
@@ -23,6 +30,13 @@ export class App extends Component {
     var data = document.getElementById("txtData");
     data.select();
     document.execCommand("copy");
+  }
+
+  async onPlanChange(event) {
+    var value = event.target.value;
+    this.setState({
+      data: value,
+    });
   }
 
   render() {
@@ -65,9 +79,19 @@ export class App extends Component {
           </select>
         </p>
         <p>
-          <textarea value={this.state.data} id="txtData"></textarea>
+          <textarea
+            defaultValue={this.state.data}
+            id="txtData"
+            onChange={(event) => this.onPlanChange(event)}
+          ></textarea>
         </p>
         <button onClick={() => this.copyText()}>Copy text</button>
+        <br /> <br />
+        {this.state.data && (
+          <pre>
+            <code>{this.state.data}</code>
+          </pre>
+        )}
       </div>
     );
   }

@@ -1,5 +1,7 @@
 body {
   scroll-behavior: smooth;
+  background-color: #ea9a96;
+  color: #303960;
 }
 
 .App {
@@ -46,20 +48,49 @@ body {
 select,
 input,
 button {
-  width: 90%;
+  width: 98%;
   height: 35px;
 }
 
 textarea {
-  width: 90%;
-  height: 65vh;
+  width: 98%;
+  height: 70vh;
   resize: none;
   overflow-y: auto;
 }
 
-p {
+p,
+h2 {
   padding-top: 5px;
   padding-bottom: 5px;
   margin-top: 5px;
   margin-bottom: 5px;
+}
+
+.btn-footer {
+  width: 45%;
+}
+
+pre {
+  display: block;
+  padding: 9.5px;
+  margin: 0 0 10px;
+  font-size: 13px;
+  line-height: 1.42857;
+  word-break: break-all;
+  word-wrap: break-word;
+  color: #333;
+  background-color: #f5f5f5;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  text-align: left;
+}
+
+pre code {
+  padding: 0;
+  font-size: inherit;
+  color: inherit;
+  white-space: pre-wrap;
+  background-color: transparent;
+  border-radius: 0;
 }
