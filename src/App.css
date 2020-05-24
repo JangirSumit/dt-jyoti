@@ -44,14 +44,17 @@ body {
 }
 
 select,
-input {
+input,
+button {
   width: 90%;
   height: 35px;
 }
 
 textarea {
   width: 90%;
-  height: 75vh;
+  height: 65vh;
+  resize: none;
+  overflow-y: auto;
 }
 
 p {

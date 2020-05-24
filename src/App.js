@@ -19,6 +19,12 @@ export class App extends Component {
     });
   }
 
+  async copyText() {
+    var data = document.getElementById("txtData");
+    data.select();
+    document.execCommand("copy");
+  }
+
   render() {
     const plans = [
       "-- select --",
@@ -59,8 +65,9 @@ export class App extends Component {
           </select>
         </p>
         <p>
-          <textarea value={this.state.data}></textarea>
+          <textarea value={this.state.data} id="txtData"></textarea>
         </p>
+        <button onClick={() => this.copyText()}>Copy text</button>
       </div>
     );
   }
