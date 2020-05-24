@@ -1,5 +1,11 @@
+body {
+  scroll-behavior: smooth;
+}
+
 .App {
   text-align: center;
+  margin: auto;
+  padding: auto;
 }
 
 .App-logo {
@@ -35,4 +41,22 @@
   to {
     transform: rotate(360deg);
   }
+}
+
+select,
+input {
+  width: 90%;
+  height: 35px;
+}
+
+textarea {
+  width: 90%;
+  height: 75vh;
+}
+
+p {
+  padding-top: 5px;
+  padding-bottom: 5px;
+  margin-top: 5px;
+  margin-bottom: 5px;
 }

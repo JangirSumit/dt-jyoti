@@ -1,26 +1,69 @@
-import React from 'react';
-import logo from './logo.svg';
-import './App.css';
+import React, { Component } from "react";
+import "./App.css";
 
-function App() {
-  return (
-    <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
+export class App extends Component {
+  constructor(props) {
+    super(props);
+
+    this.state = {
+      selectedPlan: "-- select --",
+      data: "",
+    };
+  }
+
+  async selectPlan(event) {
+    var result = await fetch("data/PCOD.txt");
+    var data = await (await result).text();
+    this.setState({
+      data: data,
+    });
+  }
+
+  render() {
+    const plans = [
+      "-- select --",
+      "Diabetes",
+      "PCOD",
+      "Thyroid",
+      "Heart",
+      "Pregnancy",
+      "Lectation",
+      "Renal",
+      "Renal Stone",
+      "Liver",
+      "Gluten Free",
+      "Arthritis",
+      "Asthma",
+      "2000 KCal",
+      "1200 KCal",
+      "1800 KCal",
+      "1600 KCal",
+    ];
+
+    return (
+      <div className="App">
+        <h2>Diet Plans - Dietitian Jyoti</h2>
+        <p>Select Plan</p>
         <p>
-          Edit <code>src/App.js</code> and save to reload.
+          <select
+            className="plans"
+            id="plans"
+            name="plans"
+            onChange={(event) => this.selectPlan(event)}
+          >
+            {plans.map((p, i) => (
+              <option key={i} value={p}>
+                {p}
+              </option>
+            ))}
+          </select>
         </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </header>
-    </div>
-  );
+        <p>
+          <textarea value={this.state.data}></textarea>
+        </p>
+      </div>
+    );
+  }
 }
 
 export default App;
