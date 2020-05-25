@@ -6,7 +6,7 @@ export class App extends Component {
     super(props);
 
     this.state = {
-      selectedPlan: "-- select --",
+      selectedPlan: "-- select Plan--",
       data: "",
     };
   }
@@ -41,7 +41,7 @@ export class App extends Component {
 
   render() {
     const plans = [
-      "-- select --",
+      "-- select Plan--",
       "Diabetes",
       "PCOD",
       "Thyroid",
@@ -63,7 +63,6 @@ export class App extends Component {
     return (
       <div className="App">
         <h2>Diet Plans - Dietitian Jyoti</h2>
-        <p>Select Plan</p>
         <p>
           <select
             className="plans"
