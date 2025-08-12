@@ -1,6 +1,6 @@
 {
   "short_name": "Dt Jyoti",
-  "name": "Dt Jyoti - Diet Plans",
+  "name": "Dietitian Jyoti — Nutrition & Diet Plans",
   "icons": [
     {
       "src": "favicon.ico",
@@ -23,8 +23,9 @@
       "sizes": "32x32"
     }
   ],
-  "start_url": ".",
+  "start_url": "/",
+  "scope": "/",
   "display": "standalone",
-  "theme_color": "#000000",
+  "theme_color": "#2e7d32",
   "background_color": "#ffffff"
 }

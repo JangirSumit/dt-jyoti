@@ -20,9 +20,9 @@ export default function Blogs() {
   return (
     <>
       <Banner src="/images/banner-blogs.svg" alt="Blogs banner" />
-      <Paper sx={{ p: 3, borderRadius: 3 }}>
+  <Paper sx={{ p: { xs: 2, md: 3 }, borderRadius: 3 }}>
         <Typography variant="h4" gutterBottom>Blogs</Typography>
-        <Grid container spacing={2}>
+  <Grid container spacing={{ xs: 2, md: 2 }}>
           {posts.map(p => (
             <Grid item xs={12} md={4} key={p.slug}>
               <Card sx={{ borderRadius: 3, height: '100%', display: 'flex', flexDirection: 'column' }}>

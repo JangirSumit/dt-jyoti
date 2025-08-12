@@ -56,11 +56,11 @@ export default function Appointment() {
 
   return (
     <>
-      <Banner src="/images/banner-appointment.svg" alt="Appointment banner" />
-  <Paper sx={{ p: 3, borderRadius: 3, boxShadow: 2 }}>
+    <Banner src="/images/banner-appointment.svg" alt="Appointment banner" />
+  <Paper sx={{ p: { xs: 2, md: 3 }, borderRadius: 3, boxShadow: 2 }}>
       <Typography variant="h4" gutterBottom>Book Appointment</Typography>
       <form onSubmit={submit}>
-        <Grid container spacing={2}>
+  <Grid container spacing={{ xs: 2, md: 2 }}>
           <Grid item xs={12} md={7}>
             <Grid container spacing={2}>
           <Grid item xs={12} sm={6}><TextField label="Name" name="name" value={booking.name} onChange={onChange} fullWidth required /></Grid>
@@ -76,7 +76,7 @@ export default function Appointment() {
             </Grid>
           </Grid>
           <Grid item xs={12} md={5}>
-            <Box component="img" src="/images/humans/client.svg" alt="Client" sx={{ width: '100%', borderRadius: 3 }} />
+            <Box component="img" src="/images/humans/client.svg" alt="Client" sx={{ width: '100%', height: 'auto', borderRadius: 3, display: 'block' }} />
           </Grid>
         </Grid>
       </form>

@@ -14,7 +14,7 @@ export default function Contact() {
   return (
     <>
       <Banner src="/images/banner-contact.svg" alt="Contact banner" />
-      <Paper sx={{ p: 3 }}>
+  <Paper sx={{ p: { xs: 2, md: 3 } }}>
       <Typography variant="h4" gutterBottom>Contact Me</Typography>
       <Grid container spacing={3}>
         <Grid item xs={12} md={6}>

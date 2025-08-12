@@ -21,9 +21,9 @@ export default function Home() {
         imageSrc="/images/ai/hero-diet.svg"
       />
 
-      <Grid container spacing={3}>
+  <Grid container spacing={{ xs: 2, md: 3 }}>
         <Grid item xs={12} md={4}>
-          <Card elevation={2} sx={{ borderRadius: 3, transition: 'all .2s ease', '&:hover': { transform: 'translateY(-4px)', boxShadow: 4 } }}>
+          <Card elevation={2} sx={{ borderRadius: 3, height: '100%', transition: 'all .2s ease', '&:hover': { transform: 'translateY(-4px)', boxShadow: 4 } }}>
             <CardMedia component="img" height="160" image="/images/abstract/a1.svg" alt="Plans" sx={{ objectFit: 'cover' }} />
             <CardContent>
               <Typography variant="h6">Clinical-grade nutrition plans</Typography>
@@ -32,7 +32,7 @@ export default function Home() {
           </Card>
         </Grid>
         <Grid item xs={12} md={4}>
-          <Card elevation={2} sx={{ borderRadius: 3, transition: 'all .2s ease', '&:hover': { transform: 'translateY(-4px)', boxShadow: 4 } }}>
+          <Card elevation={2} sx={{ borderRadius: 3, height: '100%', transition: 'all .2s ease', '&:hover': { transform: 'translateY(-4px)', boxShadow: 4 } }}>
             <CardMedia component="img" height="160" image="/images/abstract/a1.svg" alt="Slots" sx={{ objectFit: 'cover' }} />
             <CardContent>
               <Typography variant="h6">Seamless online scheduling</Typography>
@@ -41,7 +41,7 @@ export default function Home() {
           </Card>
         </Grid>
         <Grid item xs={12} md={4}>
-          <Card elevation={2} sx={{ borderRadius: 3, transition: 'all .2s ease', '&:hover': { transform: 'translateY(-4px)', boxShadow: 4 } }}>
+          <Card elevation={2} sx={{ borderRadius: 3, height: '100%', transition: 'all .2s ease', '&:hover': { transform: 'translateY(-4px)', boxShadow: 4 } }}>
             <CardMedia component="img" height="160" image="/images/ai/cards.svg" alt="AI" sx={{ objectFit: 'cover' }} />
             <CardContent>
               <Typography variant="h6">AI-assisted daily planning</Typography>
@@ -52,9 +52,9 @@ export default function Home() {
       </Grid>
 
       {/* Why choose Dt. Jyoti */}
-      <Paper sx={{ p: 3, borderRadius: 3, mt: 5 }}>
+  <Paper sx={{ p: { xs: 2, md: 3 }, borderRadius: 3, mt: 5 }}>
         <Typography variant="h5" gutterBottom>Why choose Dt. Jyoti</Typography>
-        <Grid container spacing={2}>
+  <Grid container spacing={{ xs: 1.5, md: 2 }}>
           <Grid item xs={12} md={4}>
             <Box sx={{ display: 'flex', gap: 1.5, alignItems: 'flex-start' }}>
               <VerifiedIcon color="success" />
@@ -84,7 +84,7 @@ export default function Home() {
           </Grid>
         </Grid>
         <Divider sx={{ my: 2 }} />
-        <Grid container spacing={2}>
+  <Grid container spacing={{ xs: 1.5, md: 2 }}>
           {[
             { n: '1,000+', l: 'Clients served' },
             { n: '4.9/5', l: 'Average rating' },
@@ -101,8 +101,8 @@ export default function Home() {
       </Paper>
 
       {/* AI Promo strip */}
-      <Paper sx={{ p: 3, borderRadius: 3, mt: 4, background: 'linear-gradient(90deg, #e8f5e9, #e3f2fd)' }}>
-        <Grid container alignItems="center" spacing={2}>
+      <Paper sx={{ p: { xs: 2, md: 3 }, borderRadius: 3, mt: 4, background: 'linear-gradient(90deg, #e8f5e9, #e3f2fd)' }}>
+        <Grid container alignItems="center" spacing={{ xs: 1.5, md: 2 }}>
           <Grid item xs={12} md={8}>
             <Typography variant="h5" sx={{ fontWeight: 700 }} gutterBottom>AI-powered. Dietitian-designed.</Typography>
             <Typography color="text.secondary">Get quick, sensible plans that follow nutrition best practices—customized to your stats and goals.</Typography>
@@ -118,14 +118,14 @@ export default function Home() {
       {/* Testimonials */}
       <Box sx={{ mt: 5 }}>
         <Typography variant="h5" gutterBottom>What clients say</Typography>
-        <Grid container spacing={2}>
+  <Grid container spacing={{ xs: 2, md: 2 }}>
           {[
             { q: 'Lost 7kg in 10 weeks, felt energetic all day!', n: 'Riya', a: '/images/humans/client.svg' },
             { q: 'My sugar levels are stable and meals are enjoyable.', n: 'Mahesh', a: '/images/humans/client.svg' },
             { q: 'Plans fit my busy schedule—sustainable and tasty.', n: 'Aisha', a: '/images/humans/client.svg' }
           ].map((t, i) => (
-            <Grid item xs={12} md={4} key={i}>
-        <Paper sx={{ p: 3, borderRadius: 3 }}>
+      <Grid item xs={12} md={4} key={i}>
+    <Paper sx={{ p: { xs: 2, md: 3 }, borderRadius: 3, height: '100%' }}>
                 <Box>
           <FormatQuoteIcon fontSize="small" color="disabled" />
           <Typography variant="body1" sx={{ fontStyle: 'italic' }}>

@@ -9,7 +9,7 @@ export default function About() {
   return (
     <>
       <Banner src="/images/banner-about.svg" alt="About banner" />
-      <Paper sx={{ p: { xs: 2, md: 4 }, borderRadius: 3 }}>
+  <Paper sx={{ p: { xs: 2, md: 4 }, borderRadius: 3 }}>
         <Grid container spacing={4}>
           {/* Left profile card */}
           <Grid item xs={12} md={4}>

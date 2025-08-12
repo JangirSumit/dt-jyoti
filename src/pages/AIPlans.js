@@ -27,7 +27,7 @@ export default function AIPlans() {
   return (
     <>
       <Banner src="/images/ai/hero-diet.svg" alt="AI Diet Planner" />
-      <Paper sx={{ p: { xs: 2, md: 3 }, borderRadius: 3 }}>
+  <Paper sx={{ p: { xs: 2, md: 3 }, borderRadius: 3 }}>
         <Grid container spacing={3}>
           <Grid item xs={12}>
             <Typography variant="h4" gutterBottom>AI-powered Diet Plan</Typography>
@@ -82,7 +82,7 @@ export default function AIPlans() {
             </Grid>
           </Grid>
           <Grid item xs={12} md={6}>
-            <Paper variant="outlined" sx={{ p: 2.5, borderRadius: 2 }}>
+            <Paper variant="outlined" sx={{ p: { xs: 2, md: 2.5 }, borderRadius: 2 }}>
               <Typography variant="subtitle1" gutterBottom>Daily Targets</Typography>
               <Box sx={{ display: 'flex', gap: 1, flexWrap: 'wrap', mb: 1 }}>
                 <Chip color="success" label={`${plan.calories} kcal`} />
@@ -102,7 +102,7 @@ export default function AIPlans() {
                   </ListItem>
                 ))}
               </List>
-              <Box sx={{ display: 'flex', gap: 1 }}>
+              <Box sx={{ display: 'flex', gap: 1, flexWrap: 'wrap' }}>
                 <Button variant="contained" sx={{ mt: 1 }} onClick={()=> navigator.clipboard.writeText(JSON.stringify(plan, null, 2))}>Copy Plan JSON</Button>
                 <Button variant="outlined" sx={{ mt: 1 }} href="/appointment">Book a consultation</Button>
               </Box>
