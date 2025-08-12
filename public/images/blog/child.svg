@@ -1,0 +1,15 @@
+<svg width="1200" height="420" viewBox="0 0 1200 420" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Child diet cover">
+  <defs>
+    <linearGradient id="gc" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#fff3e0"/>
+      <stop offset="100%" stop-color="#e8f5e9"/>
+    </linearGradient>
+  </defs>
+  <rect width="1200" height="420" fill="url(#gc)"/>
+  <g opacity="0.55">
+    <rect x="140" y="160" width="140" height="140" rx="24" fill="#ffcc80"/>
+    <circle cx="520" cy="210" r="100" fill="#aed581"/>
+    <polygon points="900,120 1020,320 780,320" fill="#90caf9"/>
+  </g>
+  <text x="80" y="240" font-family="'Inter', Arial, sans-serif" font-weight="800" font-size="56" fill="#1b5e20">Healthy Child Diet</text>
+</svg>

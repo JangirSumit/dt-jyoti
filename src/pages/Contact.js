@@ -1,8 +1,10 @@
 import React from 'react';
 import { Paper, Typography, TextField, Button, Grid, Snackbar, Alert } from '@mui/material';
 import Banner from '../components/Banner';
+import useDocumentTitle from '../hooks/useDocumentTitle';
 
 export default function Contact() {
+  useDocumentTitle('Contact');
   const [form, setForm] = React.useState({ name: '', email: '', message: '' });
   const [snackbar, setSnackbar] = React.useState({ open: false, message: '', severity: 'success' });
 

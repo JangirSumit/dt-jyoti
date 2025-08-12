@@ -1,6 +1,7 @@
 import React, { useMemo, useState } from 'react';
 import { Paper, Typography, Grid, TextField, MenuItem, Button, Box } from '@mui/material';
 import Banner from '../components/Banner';
+import useDocumentTitle from '../hooks/useDocumentTitle';
 
 function calcBMI(weightKg, heightCm) {
   if (!weightKg || !heightCm) return null;
@@ -36,6 +37,7 @@ function generatePlan(calories) {
 }
 
 export default function Calculator() {
+  useDocumentTitle('BMI / BMR Calculator');
   const [form, setForm] = useState({ sex: 'female', age: '', heightCm: '', weightKg: '', activity: 'light', goal: 'loss' });
   const [plan, setPlan] = useState([]);
 

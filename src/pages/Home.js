@@ -1,9 +1,10 @@
 import React from 'react';
-import { Box, Typography, Paper, Grid, Button, Card, CardContent, CardMedia, Stack } from '@mui/material';
+import { Box, Typography, Paper, Grid, Card, CardContent, CardMedia } from '@mui/material';
 import HeroBanner from '../components/HeroBanner';
-import { Link as RouterLink } from 'react-router-dom';
+import useDocumentTitle from '../hooks/useDocumentTitle';
 
 export default function Home() {
+  useDocumentTitle('Home');
   return (
     <Box>
       <HeroBanner

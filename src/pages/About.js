@@ -1,8 +1,10 @@
 import React from 'react';
 import { Typography, Paper } from '@mui/material';
 import Banner from '../components/Banner';
+import useDocumentTitle from '../hooks/useDocumentTitle';
 
 export default function About() {
+  useDocumentTitle('About');
   return (
     <>
       <Banner src="/images/banner-about.svg" alt="About banner" />

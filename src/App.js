@@ -19,6 +19,7 @@ import Contact from './pages/Contact';
 import Blogs from './pages/Blogs';
 import Calculator from './pages/Calculator';
 import Footer from './components/Footer';
+import BlogDetail from './pages/BlogDetail';
 import "./App.css";
 
 
@@ -189,6 +190,7 @@ export class App extends Component {
               <Route path="/appointment" element={<Appointment />} />
               <Route path="/contact" element={<Contact />} />
               <Route path="/blogs" element={<Blogs />} />
+              <Route path="/blogs/:slug" element={<BlogDetail />} />
               <Route path="/calculator" element={<Calculator />} />
             </Routes>
           </Container>

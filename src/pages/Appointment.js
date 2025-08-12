@@ -1,9 +1,11 @@
 import React, { useEffect, useState } from 'react';
 import { Paper, Typography, Grid, TextField, Select, MenuItem, Button, Snackbar, Alert, Box, IconButton } from '@mui/material';
 import Banner from '../components/Banner';
+import useDocumentTitle from '../hooks/useDocumentTitle';
 import DeleteIcon from '@mui/icons-material/Delete';
 
 export default function Appointment() {
+  useDocumentTitle('Appointment');
   const [booking, setBooking] = useState({ name: '', contact: '', date: '', slot: '' });
   const [appointments, setAppointments] = useState([]);
   const [slotsForDate, setSlotsForDate] = useState([]);
