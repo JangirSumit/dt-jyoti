@@ -24,6 +24,120 @@ export default function AIPlans() {
   };
   const setPreset = (goal) => setForm((f) => ({ ...f, goal }));
 
+  const toText = (p) => {
+    const lines = [];
+    lines.push('AI Diet Plan');
+    lines.push('');
+    lines.push(`Goal: ${form.goal}`);
+    lines.push(`Cuisine: ${form.cuisine}${form.veg ? ' • Vegetarian' : ''}`);
+    lines.push(`Calories: ${p.calories} kcal`);
+    lines.push(`Macros: Protein ${p.proteinG} g • Carbs ${p.carbsG} g • Fat ${p.fatG} g`);
+    lines.push('');
+    lines.push('Meals:');
+    p.meals.forEach((m, i) => {
+      lines.push(`  ${i + 1}. ${m.name}`);
+      lines.push(`     - ${m.items.join(', ')}`);
+    });
+    lines.push('');
+    lines.push('AI-generated draft — better to consult directly for personalized advice.');
+    try {
+      lines.push(`Generated from: ${window.location.origin}`);
+    } catch {}
+    return lines.join('\n');
+  };
+
+  const handleDownloadTxt = () => {
+    const content = toText(plan);
+    const blob = new Blob([content], { type: 'text/plain;charset=utf-8' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `diet-plan-${form.goal}-${form.cuisine}.txt`;
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    URL.revokeObjectURL(url);
+  };
+
+  const wrapText = (ctx, text, x, y, maxWidth, lineHeight) => {
+    const words = text.split(' ');
+    let line = '';
+    let cursorY = y;
+    for (let n = 0; n < words.length; n++) {
+      const testLine = line + words[n] + ' ';
+      const metrics = ctx.measureText(testLine);
+      if (metrics.width > maxWidth && n > 0) {
+        ctx.fillText(line, x, cursorY);
+        line = words[n] + ' ';
+        cursorY += lineHeight;
+      } else {
+        line = testLine;
+      }
+    }
+    ctx.fillText(line.trim(), x, cursorY);
+    return cursorY + lineHeight;
+  };
+
+  const handleDownloadPng = () => {
+    const width = 1080;
+    const height = 1350;
+    const canvas = document.createElement('canvas');
+    canvas.width = width;
+    canvas.height = height;
+    const ctx = canvas.getContext('2d');
+
+    const grd = ctx.createLinearGradient(0, 0, width, height);
+    grd.addColorStop(0, '#eef7f5');
+    grd.addColorStop(1, '#f2f7fb');
+    ctx.fillStyle = grd;
+    ctx.fillRect(0, 0, width, height);
+
+    const pad = 64;
+    const maxTextWidth = width - pad * 2;
+    let y = pad + 24;
+
+    ctx.fillStyle = '#1f2937';
+    ctx.font = 'bold 56px Inter, Arial, Helvetica, sans-serif';
+    ctx.fillText('AI Diet Plan', pad, y);
+    y += 48 + 16;
+
+    ctx.font = '400 28px Inter, Arial, Helvetica, sans-serif';
+    y = wrapText(ctx, `Goal: ${form.goal}  •  Cuisine: ${form.cuisine}${form.veg ? ' • Vegetarian' : ''}`, pad, y, maxTextWidth, 38);
+    y = wrapText(ctx, `Calories: ${plan.calories} kcal`, pad, y, maxTextWidth, 38);
+    y = wrapText(ctx, `Macros: Protein ${plan.proteinG} g  •  Carbs ${plan.carbsG} g  •  Fat ${plan.fatG} g`, pad, y, maxTextWidth, 38);
+    y += 16;
+
+    ctx.font = '600 34px Inter, Arial, Helvetica, sans-serif';
+    ctx.fillText('Meals', pad, y);
+    y += 34 + 8;
+    ctx.font = '400 28px Inter, Arial, Helvetica, sans-serif';
+    plan.meals.forEach((m, i) => {
+      y = wrapText(ctx, `${i + 1}. ${m.name}`, pad, y, maxTextWidth, 36);
+      y = wrapText(ctx, `• ${m.items.join(', ')}`, pad + 24, y, maxTextWidth - 24, 36);
+      y += 8;
+    });
+
+    y += 8;
+  ctx.font = 'italic 22px Inter, Arial, Helvetica, sans-serif';
+  ctx.fillStyle = '#6b7280';
+  wrapText(ctx, 'AI-generated draft — better to consult directly for personalized advice.', pad, Math.min(y, height - 120), maxTextWidth, 32);
+
+  // Footer with site origin
+  let origin = '';
+  try { origin = window.location.origin; } catch {}
+  ctx.textAlign = 'center';
+  ctx.font = '400 22px Inter, Arial, Helvetica, sans-serif';
+  ctx.fillText(origin ? `Generated from ${origin}` : 'Generated from website', width / 2, height - 36);
+
+    const dataUrl = canvas.toDataURL('image/png');
+    const a = document.createElement('a');
+    a.href = dataUrl;
+    a.download = `diet-plan-${form.goal}-${form.cuisine}.png`;
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+  };
+
   return (
     <>
       <Banner src="/images/ai/hero-diet.svg" alt="AI Diet Planner" />
@@ -103,7 +217,8 @@ export default function AIPlans() {
                 ))}
               </List>
               <Box sx={{ display: 'flex', gap: 1, flexWrap: 'wrap' }}>
-                <Button variant="contained" sx={{ mt: 1 }} onClick={()=> navigator.clipboard.writeText(JSON.stringify(plan, null, 2))}>Copy Plan JSON</Button>
+                <Button variant="contained" sx={{ mt: 1 }} onClick={handleDownloadTxt}>Download Plan (TXT)</Button>
+                <Button variant="outlined" sx={{ mt: 1 }} onClick={handleDownloadPng}>Download Card (PNG)</Button>
                 <Button variant="outlined" sx={{ mt: 1 }} href="/appointment">Book a consultation</Button>
               </Box>
             </Paper>
