@@ -10,8 +10,8 @@ export default function HeroBanner({ title, subtitle, ctaText, ctaTo, imageSrc }
       borderRadius: 3,
       p: { xs: 3, md: 6 },
       mb: 4,
-      color: '#053b2f',
-      background: 'linear-gradient(120deg,#e0f7fa,#e8f5e9)'
+      color: 'text.primary',
+      background: 'linear-gradient(120deg,#eef7f5,#f2f7fb)'
     }}>
       {/* Decorative waves */}
       <Box aria-hidden sx={{
@@ -38,7 +38,7 @@ export default function HeroBanner({ title, subtitle, ctaText, ctaTo, imageSrc }
         </Box>
         {imageSrc && (
           <Box sx={{ flex: 1, display: 'flex', justifyContent: 'center', position: 'relative', zIndex: 1 }}>
-            <Box component="img" src={imageSrc} alt="banner" sx={{ width: { xs: 240, md: 320 }, borderRadius: 4, boxShadow: 3 }} />
+            <Box component="img" src={imageSrc} alt="banner" sx={{ width: { xs: 220, md: 300 }, borderRadius: 4, boxShadow: 2 }} />
           </Box>
         )}
       </Stack>

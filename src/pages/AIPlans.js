@@ -22,16 +22,24 @@ export default function AIPlans() {
     const { name, value } = e.target;
     setForm((f) => ({ ...f, [name]: name === 'age' || name.includes('Cm') || name.includes('Kg') ? Number(value) : value }));
   };
+  const setPreset = (goal) => setForm((f) => ({ ...f, goal }));
 
   return (
     <>
       <Banner src="/images/ai/hero-diet.svg" alt="AI Diet Planner" />
-      <Paper sx={{ p: 3, borderRadius: 3 }}>
-        <Typography variant="h4" gutterBottom>AI-powered Diet Plan</Typography>
-        <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
-          Enter your details and get a balanced daily plan with calories and macros. This rule-based generator is designed by a dietitian for safe defaults.
-        </Typography>
-        <Grid container spacing={2}>
+      <Paper sx={{ p: { xs: 2, md: 3 }, borderRadius: 3 }}>
+        <Grid container spacing={3}>
+          <Grid item xs={12}>
+            <Typography variant="h4" gutterBottom>AI-powered Diet Plan</Typography>
+            <Typography variant="body1" color="text.secondary">
+              Balanced daily plan with calories, macros, and meal ideas—generated instantly using safe, rule-based defaults crafted by a dietitian.
+            </Typography>
+            <Box sx={{ mt: 2, display: 'flex', gap: 1, flexWrap: 'wrap' }}>
+              <Chip label="Lose weight" variant={form.goal==='lose'?'filled':'outlined'} color="primary" onClick={()=> setPreset('lose')} />
+              <Chip label="Maintain" variant={form.goal==='maintain'?'filled':'outlined'} color="primary" onClick={()=> setPreset('maintain')} />
+              <Chip label="Gain muscle" variant={form.goal==='gain'?'filled':'outlined'} color="primary" onClick={()=> setPreset('gain')} />
+            </Box>
+          </Grid>
           <Grid item xs={12} md={6}>
             <Grid container spacing={2}>
               <Grid item xs={6}><TextField label="Age" name="age" type="number" fullWidth value={form.age} onChange={onChange} /></Grid>
@@ -74,7 +82,7 @@ export default function AIPlans() {
             </Grid>
           </Grid>
           <Grid item xs={12} md={6}>
-            <Paper variant="outlined" sx={{ p: 2, borderRadius: 2 }}>
+            <Paper variant="outlined" sx={{ p: 2.5, borderRadius: 2 }}>
               <Typography variant="subtitle1" gutterBottom>Daily Targets</Typography>
               <Box sx={{ display: 'flex', gap: 1, flexWrap: 'wrap', mb: 1 }}>
                 <Chip color="success" label={`${plan.calories} kcal`} />
@@ -94,7 +102,17 @@ export default function AIPlans() {
                   </ListItem>
                 ))}
               </List>
-              <Button variant="contained" sx={{ mt: 1 }} onClick={()=> navigator.clipboard.writeText(JSON.stringify(plan, null, 2))}>Copy Plan JSON</Button>
+              <Box sx={{ display: 'flex', gap: 1 }}>
+                <Button variant="contained" sx={{ mt: 1 }} onClick={()=> navigator.clipboard.writeText(JSON.stringify(plan, null, 2))}>Copy Plan JSON</Button>
+                <Button variant="outlined" sx={{ mt: 1 }} href="/appointment">Book a consultation</Button>
+              </Box>
+            </Paper>
+          </Grid>
+          <Grid item xs={12}>
+            <Paper sx={{ p: 2, borderRadius: 2, background: 'linear-gradient(90deg, #f1f8e9, #e3f2fd)' }}>
+              <Typography variant="subtitle2" color="text.secondary">
+                Note: This AI plan is a general guide and not a substitute for medical advice. For clinical conditions, consult directly for a personalized plan.
+              </Typography>
             </Paper>
           </Grid>
         </Grid>

@@ -1,5 +1,9 @@
 import React from 'react';
-import { Box, Typography, Paper, Grid, Card, CardContent, CardMedia } from '@mui/material';
+import { Box, Typography, Paper, Grid, Card, CardContent, CardMedia, Divider } from '@mui/material';
+import VerifiedIcon from '@mui/icons-material/Verified';
+import FavoriteIcon from '@mui/icons-material/Favorite';
+import AccessTimeIcon from '@mui/icons-material/AccessTime';
+import FormatQuoteIcon from '@mui/icons-material/FormatQuote';
 import Button from '@mui/material/Button';
 import { Link as RouterLink } from 'react-router-dom';
 import HeroBanner from '../components/HeroBanner';
@@ -19,33 +23,82 @@ export default function Home() {
 
       <Grid container spacing={3}>
         <Grid item xs={12} md={4}>
-          <Card elevation={2} sx={{ borderRadius: 3 }}>
-            <CardMedia component="img" height="140" image="/logo64.png" alt="Plans" sx={{ objectFit: 'contain', p: 2 }} />
+          <Card elevation={2} sx={{ borderRadius: 3, transition: 'all .2s ease', '&:hover': { transform: 'translateY(-4px)', boxShadow: 4 } }}>
+            <CardMedia component="img" height="160" image="/images/abstract/a1.svg" alt="Plans" sx={{ objectFit: 'cover' }} />
             <CardContent>
-              <Typography variant="h6">Evidence-based plans</Typography>
-              <Typography variant="body2" color="text.secondary">Tailored plans for diabetes, PCOD, thyroid, weight, and more.</Typography>
+              <Typography variant="h6">Clinical-grade nutrition plans</Typography>
+              <Typography variant="body2" color="text.secondary">Personalized protocols for diabetes, thyroid, PCOD, weight, and life stages.</Typography>
             </CardContent>
           </Card>
         </Grid>
         <Grid item xs={12} md={4}>
-          <Card elevation={2} sx={{ borderRadius: 3 }}>
-            <CardMedia component="img" height="140" image="/logo32.png" alt="Slots" sx={{ objectFit: 'contain', p: 2 }} />
+          <Card elevation={2} sx={{ borderRadius: 3, transition: 'all .2s ease', '&:hover': { transform: 'translateY(-4px)', boxShadow: 4 } }}>
+            <CardMedia component="img" height="160" image="/images/abstract/a1.svg" alt="Slots" sx={{ objectFit: 'cover' }} />
             <CardContent>
-              <Typography variant="h6">Slot availability</Typography>
-              <Typography variant="body2" color="text.secondary">Check open slots and book instantly online.</Typography>
+              <Typography variant="h6">Seamless online scheduling</Typography>
+              <Typography variant="body2" color="text.secondary">See real-time availability and book a consultation in seconds.</Typography>
             </CardContent>
           </Card>
         </Grid>
         <Grid item xs={12} md={4}>
-          <Card elevation={2} sx={{ borderRadius: 3 }}>
-            <CardMedia component="img" height="140" image="/images/ai/cards.svg" alt="AI" sx={{ objectFit: 'cover' }} />
+          <Card elevation={2} sx={{ borderRadius: 3, transition: 'all .2s ease', '&:hover': { transform: 'translateY(-4px)', boxShadow: 4 } }}>
+            <CardMedia component="img" height="160" image="/images/ai/cards.svg" alt="AI" sx={{ objectFit: 'cover' }} />
             <CardContent>
-              <Typography variant="h6">AI-assisted suggestions</Typography>
-              <Typography variant="body2" color="text.secondary">Generate a balanced daily plan with calories, macros, and meal ideas.</Typography>
+              <Typography variant="h6">AI-assisted daily planning</Typography>
+              <Typography variant="body2" color="text.secondary">Instant plans with calories, macros, and meal ideas—designed by a dietitian.</Typography>
             </CardContent>
           </Card>
         </Grid>
       </Grid>
+
+      {/* Why choose Dt. Jyoti */}
+      <Paper sx={{ p: 3, borderRadius: 3, mt: 5 }}>
+        <Typography variant="h5" gutterBottom>Why choose Dt. Jyoti</Typography>
+        <Grid container spacing={2}>
+          <Grid item xs={12} md={4}>
+            <Box sx={{ display: 'flex', gap: 1.5, alignItems: 'flex-start' }}>
+              <VerifiedIcon color="success" />
+              <Box>
+                <Typography variant="subtitle1" sx={{ fontWeight: 600 }}>Evidence-based care</Typography>
+                <Typography color="text.secondary">Plans grounded in medical nutrition therapy and best practices.</Typography>
+              </Box>
+            </Box>
+          </Grid>
+          <Grid item xs={12} md={4}>
+            <Box sx={{ display: 'flex', gap: 1.5, alignItems: 'flex-start' }}>
+              <FavoriteIcon color="secondary" />
+              <Box>
+                <Typography variant="subtitle1" sx={{ fontWeight: 600 }}>Personal & practical</Typography>
+                <Typography color="text.secondary">Culturally relevant meals, smart swaps, and portion guidance.</Typography>
+              </Box>
+            </Box>
+          </Grid>
+          <Grid item xs={12} md={4}>
+            <Box sx={{ display: 'flex', gap: 1.5, alignItems: 'flex-start' }}>
+              <AccessTimeIcon color="primary" />
+              <Box>
+                <Typography variant="subtitle1" sx={{ fontWeight: 600 }}>Designed for busy lives</Typography>
+                <Typography color="text.secondary">Simple routines and reviews that help you stay consistent.</Typography>
+              </Box>
+            </Box>
+          </Grid>
+        </Grid>
+        <Divider sx={{ my: 2 }} />
+        <Grid container spacing={2}>
+          {[
+            { n: '1,000+', l: 'Clients served' },
+            { n: '4.9/5', l: 'Average rating' },
+            { n: '7+ yrs', l: 'Experience' },
+          ].map((s, i) => (
+            <Grid item xs={12} md={4} key={i}>
+              <Paper variant="outlined" sx={{ p: 2, textAlign: 'center', borderRadius: 2 }}>
+                <Typography variant="h5" sx={{ fontWeight: 800 }}>{s.n}</Typography>
+                <Typography color="text.secondary">{s.l}</Typography>
+              </Paper>
+            </Grid>
+          ))}
+        </Grid>
+      </Paper>
 
       {/* AI Promo strip */}
       <Paper sx={{ p: 3, borderRadius: 3, mt: 4, background: 'linear-gradient(90deg, #e8f5e9, #e3f2fd)' }}>
@@ -67,16 +120,19 @@ export default function Home() {
         <Typography variant="h5" gutterBottom>What clients say</Typography>
         <Grid container spacing={2}>
           {[
-            { q: 'Lost 7kg in 10 weeks, felt energetic all day!', n: 'Riya' },
-            { q: 'My sugar levels are stable and meals are enjoyable.', n: 'Mahesh' },
-            { q: 'Plans fit my busy schedule—sustainable and tasty.', n: 'Aisha' }
+            { q: 'Lost 7kg in 10 weeks, felt energetic all day!', n: 'Riya', a: '/images/humans/client.svg' },
+            { q: 'My sugar levels are stable and meals are enjoyable.', n: 'Mahesh', a: '/images/humans/client.svg' },
+            { q: 'Plans fit my busy schedule—sustainable and tasty.', n: 'Aisha', a: '/images/humans/client.svg' }
           ].map((t, i) => (
             <Grid item xs={12} md={4} key={i}>
-              <Paper sx={{ p: 3, borderRadius: 3 }}>
-                <Typography variant="body1" sx={{ fontStyle: 'italic' }}>
-                  “{t.q}”
-                </Typography>
-                <Typography sx={{ mt: 1 }} color="text.secondary">— {t.n}</Typography>
+        <Paper sx={{ p: 3, borderRadius: 3 }}>
+                <Box>
+          <FormatQuoteIcon fontSize="small" color="disabled" />
+          <Typography variant="body1" sx={{ fontStyle: 'italic' }}>
+                    {t.q}
+                  </Typography>
+                  <Typography sx={{ mt: 1 }} color="text.secondary">— {t.n}</Typography>
+                </Box>
               </Paper>
             </Grid>
           ))}

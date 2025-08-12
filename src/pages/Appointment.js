@@ -61,6 +61,8 @@ export default function Appointment() {
       <Typography variant="h4" gutterBottom>Book Appointment</Typography>
       <form onSubmit={submit}>
         <Grid container spacing={2}>
+          <Grid item xs={12} md={7}>
+            <Grid container spacing={2}>
           <Grid item xs={12} sm={6}><TextField label="Name" name="name" value={booking.name} onChange={onChange} fullWidth required /></Grid>
           <Grid item xs={12} sm={6}><TextField label="Contact" name="contact" value={booking.contact} onChange={onChange} fullWidth required /></Grid>
           <Grid item xs={12} sm={6}><TextField type="date" label="Date" name="date" value={booking.date} onChange={onChange} fullWidth required InputLabelProps={{ shrink: true }} /></Grid>
@@ -71,6 +73,11 @@ export default function Appointment() {
             </Select>
           </Grid>
           <Grid item xs={12}><Button type="submit" variant="contained">Book</Button></Grid>
+            </Grid>
+          </Grid>
+          <Grid item xs={12} md={5}>
+            <Box component="img" src="/images/humans/client.svg" alt="Client" sx={{ width: '100%', borderRadius: 3 }} />
+          </Grid>
         </Grid>
       </form>
 
