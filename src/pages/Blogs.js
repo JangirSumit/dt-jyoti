@@ -17,6 +17,11 @@ export default function Blogs() {
       { slug: 'diabetes-basics', title: 'Diabetes Diet Essentials – Practical Tips and Sample Day', excerpt: 'Manage blood sugar with balanced carbs, fiber-rich foods, and steady meal timing. Includes a sample one-day plan.', cover: '/images/blog/diabetes.svg', tag: 'Clinical', read: '4 min' },
       { slug: 'child-diet-guide', title: 'Child Nutrition – Growth, Immunity, and Habits', excerpt: 'Build strong foundations with balanced plates, smart snacks, hydration, and routine.', cover: '/images/blog/child.svg', tag: 'Lifestyle', read: '3 min' },
       { slug: 'pollution-control-diets', title: 'Diets for Pollution Exposure – Protect with Antioxidants', excerpt: 'Air pollution increases oxidative stress; nutrition can help counteract it.', cover: '/images/blog/pollution.svg', tag: 'Wellness', read: '5 min' },
+      { slug: 'ultra-processed-foods', title: 'Ultra-Processed Foods – What They Are and How to Cut Back', excerpt: 'Understand UPFs, spot them quickly, and learn simple swaps to reduce them in daily meals.', cover: '/images/abstract/a1.svg', tag: 'Wellness', read: '4 min' },
+      { slug: 'intermittent-fasting-basics', title: 'Intermittent Fasting – Evidence, Options, and Safety', excerpt: 'What IF is, potential benefits, who should avoid it, and practical tips to start safely.', cover: '/images/abstract/a1.svg', tag: 'Lifestyle', read: '5 min' },
+      { slug: 'gut-health-probiotics', title: 'Gut Health 101 – Probiotics, Prebiotics, and Daily Habits', excerpt: 'Balance your microbiome with food sources and habits that support digestive wellness.', cover: '/images/abstract/a1.svg', tag: 'Wellness', read: '4 min' },
+      { slug: 'hypertension-dash-diet', title: 'Hypertension – A Practical Guide to DASH Eating', excerpt: 'The DASH pattern made practical: meal ideas, plate-building, and sodium savvy.', cover: '/images/abstract/a1.svg', tag: 'Clinical', read: '4 min' },
+      { slug: 'summer-hydration-electrolytes', title: 'Summer Hydration – Water, Electrolytes, and Smart Cooling', excerpt: 'How much to drink, when electrolytes help, and cooling choices for hot days.', cover: '/images/abstract/a1.svg', tag: 'Lifestyle', read: '3 min' },
     ]);
   }, []);
 
