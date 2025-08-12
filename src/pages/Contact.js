@@ -1,5 +1,6 @@
 import React from 'react';
 import { Paper, Typography, TextField, Button, Grid, Snackbar, Alert } from '@mui/material';
+import Banner from '../components/Banner';
 
 export default function Contact() {
   const [form, setForm] = React.useState({ name: '', email: '', message: '' });
@@ -9,7 +10,9 @@ export default function Contact() {
   const submit = (e) => { e.preventDefault(); setSnackbar({ open: true, message: 'Thanks! We will get back to you.', severity: 'success' }); setForm({ name: '', email: '', message: '' }); };
 
   return (
-    <Paper sx={{ p: 3 }}>
+    <>
+      <Banner src="/images/banner-contact.svg" alt="Contact banner" />
+      <Paper sx={{ p: 3 }}>
       <Typography variant="h4" gutterBottom>Contact Me</Typography>
       <form onSubmit={submit}>
         <Grid container spacing={2}>
@@ -22,6 +25,7 @@ export default function Contact() {
       <Snackbar open={snackbar.open} autoHideDuration={3000} onClose={() => setSnackbar((s) => ({ ...s, open: false }))}>
         <Alert severity={snackbar.severity} variant="filled">{snackbar.message}</Alert>
       </Snackbar>
-    </Paper>
+      </Paper>
+    </>
   );
 }

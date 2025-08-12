@@ -1,5 +1,6 @@
 import React, { useMemo, useState } from 'react';
 import { Paper, Typography, Grid, TextField, MenuItem, Button, Box } from '@mui/material';
+import Banner from '../components/Banner';
 
 function calcBMI(weightKg, heightCm) {
   if (!weightKg || !heightCm) return null;
@@ -47,7 +48,9 @@ export default function Calculator() {
   const onGenerate = () => setPlan(generatePlan(calories));
 
   return (
-    <Paper sx={{ p: 3 }}>
+    <>
+      <Banner src="/images/banner-calculator.svg" alt="Calculator banner" />
+      <Paper sx={{ p: 3 }}>
       <Typography variant="h4" gutterBottom>BMI / BMR Calculator</Typography>
       <Grid container spacing={2}>
         <Grid item xs={12} sm={4}><TextField select label="Sex" name="sex" value={form.sex} onChange={onChange} fullWidth>
@@ -84,5 +87,6 @@ export default function Calculator() {
         </Box>
       )}
     </Paper>
+    </>
   );
 }

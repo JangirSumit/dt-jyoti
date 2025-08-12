@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { Paper, Typography, Grid, TextField, Select, MenuItem, Button, Snackbar, Alert, Box, IconButton } from '@mui/material';
+import Banner from '../components/Banner';
 import DeleteIcon from '@mui/icons-material/Delete';
 
 export default function Appointment() {
@@ -52,7 +53,9 @@ export default function Appointment() {
   };
 
   return (
-    <Paper sx={{ p: 3 }}>
+    <>
+      <Banner src="/images/banner-appointment.svg" alt="Appointment banner" />
+  <Paper sx={{ p: 3, borderRadius: 3, boxShadow: 2 }}>
       <Typography variant="h4" gutterBottom>Book Appointment</Typography>
       <form onSubmit={submit}>
         <Grid container spacing={2}>
@@ -75,7 +78,7 @@ export default function Appointment() {
       ) : (
         <Box>
           {appointments.map((a) => (
-            <Paper key={a.id} sx={{ p: 1, my: 1, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+            <Paper key={a.id} sx={{ p: 1.5, my: 1, display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderRadius: 2, boxShadow: 1 }}>
               <Typography><b>{a.name}</b> ({a.contact}) — {a.date} @ {a.slot}</Typography>
               <IconButton color="error" onClick={() => cancel(a.id)}><DeleteIcon /></IconButton>
             </Paper>
@@ -86,6 +89,7 @@ export default function Appointment() {
       <Snackbar open={snackbar.open} autoHideDuration={3000} onClose={() => setSnackbar((s) => ({ ...s, open: false }))}>
         <Alert severity={snackbar.severity} variant="filled">{snackbar.message}</Alert>
       </Snackbar>
-    </Paper>
+      </Paper>
+    </>
   );
 }

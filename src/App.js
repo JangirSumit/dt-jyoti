@@ -9,7 +9,6 @@ import TextField from "@mui/material/TextField";
 import Button from "@mui/material/Button";
 import Grid from "@mui/material/Grid";
 import Snackbar from "@mui/material/Snackbar";
-import Box from "@mui/material/Box";
 import Alert from "@mui/material/Alert";
 import { BrowserRouter, Routes, Route } from 'react-router-dom';
 import NavBar from './components/NavBar';
@@ -19,6 +18,7 @@ import Appointment from './pages/Appointment';
 import Contact from './pages/Contact';
 import Blogs from './pages/Blogs';
 import Calculator from './pages/Calculator';
+import Footer from './components/Footer';
 import "./App.css";
 
 
@@ -176,13 +176,13 @@ export class App extends Component {
       "1600 KCal",
     ];
 
-    const { booking, snackbar } = this.state;
+  const { snackbar } = this.state;
 
     return (
       <div className="App">
         <BrowserRouter>
           <NavBar />
-          <Container maxWidth="md" style={{ marginTop: 30 }}>
+          <Container maxWidth="lg" style={{ marginTop: 30 }}>
             <Routes>
               <Route path="/" element={<Home />} />
               <Route path="/about" element={<About />} />
@@ -192,8 +192,9 @@ export class App extends Component {
               <Route path="/calculator" element={<Calculator />} />
             </Routes>
           </Container>
+          <Footer />
         </BrowserRouter>
-        <Container maxWidth="md" style={{ marginTop: 30 }}>
+  <Container maxWidth="lg" style={{ marginTop: 30 }}>
           <Paper elevation={3} style={{ padding: 24, marginBottom: 32, display: 'none' }}>
             <Typography variant="h5" gutterBottom>Choose Diet Plan</Typography>
             <Grid container spacing={2} alignItems="center">

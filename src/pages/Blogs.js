@@ -1,5 +1,6 @@
 import React from 'react';
 import { Paper, Typography, List, ListItem, ListItemText } from '@mui/material';
+import Banner from '../components/Banner';
 
 const demo = [
   { id: 1, title: '5 Breakfast Ideas for PCOD', excerpt: 'High-fiber, low-GI meals to stabilize insulin...' },
@@ -9,7 +10,9 @@ const demo = [
 
 export default function Blogs() {
   return (
-    <Paper sx={{ p: 3 }}>
+    <>
+      <Banner src="/images/banner-blogs.svg" alt="Blogs banner" />
+      <Paper sx={{ p: 3 }}>
       <Typography variant="h4" gutterBottom>Blogs</Typography>
       <List>
         {demo.map((b) => (
@@ -18,6 +21,7 @@ export default function Blogs() {
           </ListItem>
         ))}
       </List>
-    </Paper>
+      </Paper>
+    </>
   );
 }
