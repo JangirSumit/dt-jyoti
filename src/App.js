@@ -1,9 +1,7 @@
 
 import React, { Component } from "react";
-import AppBar from "@mui/material/AppBar";
-import Toolbar from "@mui/material/Toolbar";
-import Typography from "@mui/material/Typography";
 import Container from "@mui/material/Container";
+import Typography from "@mui/material/Typography";
 import Paper from "@mui/material/Paper";
 import Select from "@mui/material/Select";
 import MenuItem from "@mui/material/MenuItem";
@@ -13,10 +11,14 @@ import Grid from "@mui/material/Grid";
 import Snackbar from "@mui/material/Snackbar";
 import Box from "@mui/material/Box";
 import Alert from "@mui/material/Alert";
-import IconButton from "@mui/material/IconButton";
-import EventAvailable from "@mui/icons-material/EventAvailable";
-import RestaurantMenu from "@mui/icons-material/RestaurantMenu";
-import DeleteIcon from "@mui/icons-material/Delete";
+import { BrowserRouter, Routes, Route } from 'react-router-dom';
+import NavBar from './components/NavBar';
+import Home from './pages/Home';
+import About from './pages/About';
+import Appointment from './pages/Appointment';
+import Contact from './pages/Contact';
+import Blogs from './pages/Blogs';
+import Calculator from './pages/Calculator';
 import "./App.css";
 
 
@@ -178,14 +180,21 @@ export class App extends Component {
 
     return (
       <div className="App">
-        <AppBar position="static" color="primary">
-          <Toolbar>
-            <RestaurantMenu style={{ marginRight: 10 }} />
-            <Typography variant="h6">Dietitian Jyoti</Typography>
-          </Toolbar>
-        </AppBar>
+        <BrowserRouter>
+          <NavBar />
+          <Container maxWidth="md" style={{ marginTop: 30 }}>
+            <Routes>
+              <Route path="/" element={<Home />} />
+              <Route path="/about" element={<About />} />
+              <Route path="/appointment" element={<Appointment />} />
+              <Route path="/contact" element={<Contact />} />
+              <Route path="/blogs" element={<Blogs />} />
+              <Route path="/calculator" element={<Calculator />} />
+            </Routes>
+          </Container>
+        </BrowserRouter>
         <Container maxWidth="md" style={{ marginTop: 30 }}>
-          <Paper elevation={3} style={{ padding: 24, marginBottom: 32 }}>
+          <Paper elevation={3} style={{ padding: 24, marginBottom: 32, display: 'none' }}>
             <Typography variant="h5" gutterBottom>Choose Diet Plan</Typography>
             <Grid container spacing={2} alignItems="center">
               <Grid item xs={12} sm={6}>
@@ -216,65 +225,7 @@ export class App extends Component {
             </Grid>
           </Paper>
 
-          <Paper elevation={3} style={{ padding: 24, marginBottom: 32 }}>
-            <Typography variant="h5" gutterBottom><EventAvailable style={{ verticalAlign: "middle" }} /> Book Appointment</Typography>
-            <form onSubmit={this.handleBookingSubmit}>
-              <Grid container spacing={2}>
-                <Grid item xs={12} sm={6}>
-                  <TextField label="Name" name="name" value={booking.name} onChange={this.handleBookingChange} fullWidth required variant="outlined" />
-                </Grid>
-                <Grid item xs={12} sm={6}>
-                  <TextField label="Contact" name="contact" value={booking.contact} onChange={this.handleBookingChange} fullWidth required variant="outlined" />
-                </Grid>
-                <Grid item xs={12} sm={6}>
-                  <TextField type="date" label="Date" name="date" value={booking.date} onChange={this.handleBookingChange} fullWidth required variant="outlined" InputLabelProps={{ shrink: true }} />
-                </Grid>
-                <Grid item xs={12} sm={6}>
-                  <Select
-                    name="slot"
-                    value={booking.slot}
-                    onChange={this.handleBookingChange}
-                    fullWidth
-                    variant="outlined"
-                    required
-                    displayEmpty
-                  >
-                    <MenuItem value=""><em>Select Slot</em></MenuItem>
-                    {booking.date && this.state.slotsForDate.map((slot, i) => (
-                      <MenuItem key={i} value={slot}>{slot}</MenuItem>
-                    ))}
-                  </Select>
-                </Grid>
-                <Grid item xs={12}>
-                  <Button type="submit" variant="contained" color="secondary">Book Appointment</Button>
-                </Grid>
-              </Grid>
-            </form>
-          </Paper>
-
-          <Paper elevation={3} style={{ padding: 24 }}>
-            <Typography variant="h6" gutterBottom>Upcoming Appointments</Typography>
-            {this.state.appointments.length === 0 ? (
-              <Typography>No appointments booked yet.</Typography>
-            ) : (
-              <Box>
-                {this.state.appointments.map((a) => (
-                  <Paper key={a.id || `${a.date}-${a.slot}-${a.contact}`} style={{ margin: "8px 0", padding: 12, display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-                    <Typography><b>{a.name}</b> ({a.contact})</Typography>
-                    <Box display="flex" alignItems="center" gap={2}>
-                      <Typography>Date: {a.date} | Slot: {a.slot}</Typography>
-                      {a.id && (
-                        <IconButton aria-label="delete" color="error" onClick={() => this.deleteAppointment(a.id)}>
-                          <DeleteIcon />
-                        </IconButton>
-                      )}
-                    </Box>
-                  </Paper>
-                ))}
-              </Box>
-            )}
-          </Paper>
-        </Container>
+  </Container>
         <Snackbar open={snackbar.open} autoHideDuration={3000} onClose={this.handleSnackbarClose}>
           <Alert onClose={this.handleSnackbarClose} severity={snackbar.severity} variant="filled">{snackbar.message}</Alert>
         </Snackbar>
