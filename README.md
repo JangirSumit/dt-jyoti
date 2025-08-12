@@ -1,4 +1,34 @@
-This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
+# Dietitian App (dt-jyoti)
+
+Modern React (18) + MUI v5 frontend with an Express backend to manage diet plans, appointments, and slot availability.
+
+## Features
+- Browse diet plans (loaded from `public/data/*.txt`)
+- Book appointments with live slot availability
+- List and cancel appointments
+- Clean, dietitian-themed UI (MUI v5)
+
+## Scripts
+- `npm run dev` – start backend (port 4000) and CRA dev server concurrently
+- `npm run server` – start backend only (nodemon)
+- `npm start` – start CRA dev server only
+
+## Getting started
+1. Install deps:
+	```sh
+	npm install
+	```
+2. Start both servers:
+	```sh
+	npm run dev
+	```
+3. Open http://localhost:3000
+
+The frontend proxies API requests to http://localhost:4000 (see `proxy` in package.json).
+
+## Notes
+- Backend stores data in-memory. Replace with a database for persistence.
+- Update MUI theme/branding as desired.
 
 ## Available Scripts
 
