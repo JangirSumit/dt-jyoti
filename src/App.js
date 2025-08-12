@@ -182,7 +182,7 @@ export class App extends Component {
 
     return (
       <div className="App">
-        <BrowserRouter>
+  <BrowserRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
           <NavBar />
           <Container maxWidth="lg" style={{ marginTop: 30 }}>
             <Routes>

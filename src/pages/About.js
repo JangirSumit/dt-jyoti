@@ -1,5 +1,5 @@
 import React from 'react';
-import { Typography, Paper, Grid, Box, Chip, Divider, List, ListItem, ListItemText, Card, CardContent, Stack } from '@mui/material';
+import { Typography, Paper, Grid, Box, Chip, Divider, List, ListItem, ListItemText, Card, CardContent, Stack, Avatar, Tooltip } from '@mui/material';
 import Button from '@mui/material/Button';
 import Banner from '../components/Banner';
 import useDocumentTitle from '../hooks/useDocumentTitle';
@@ -9,22 +9,27 @@ export default function About() {
   return (
     <>
       <Banner src="/images/banner-about.svg" alt="About banner" />
-  <Paper sx={{ p: { xs: 2, md: 4 }, borderRadius: 3 }}>
+      <Paper sx={{ p: { xs: 2, md: 4 }, borderRadius: 3 }}>
         <Grid container spacing={4}>
           {/* Left profile card */}
           <Grid item xs={12} md={4}>
-            <Card sx={{ borderRadius: 3 }}>
+            <Card sx={{ borderRadius: 3, overflow: 'hidden', position: 'relative' }}>
+              <Box sx={{ height: 120, background: 'linear-gradient(120deg,#eef7f5,#f2f7fb)' }} />
               <CardContent>
-                <Stack alignItems="center" spacing={2}>
-                  <Box component="img" src="/images/humans/avatar.svg" alt="Dt. Jyoti" sx={{ width: 140, height: 140, borderRadius: '50%' }} />
+                <Stack alignItems="center" spacing={2} sx={{ mt: -8 }}>
+                  <Avatar src="/images/humans/avatar.svg" alt="Dt. Jyoti" sx={{ width: 120, height: 120, border: '4px solid #fff' }} />
                   <Box sx={{ textAlign: 'center' }}>
-                    <Typography variant="h5" sx={{ fontWeight: 800 }}>Dt. Jyoti Jangid</Typography>
+                    <Typography variant="h6" sx={{ fontWeight: 800 }}>Dt. Jyoti Jangid</Typography>
                     <Typography variant="body2" color="text.secondary">Dietitian & Nutritionist</Typography>
                   </Box>
                   <Stack direction="row" spacing={1} flexWrap="wrap" justifyContent="center">
-                    <Chip label="Evidence-based" size="small" />
-                    <Chip label="Client‑centric" size="small" />
-                    <Chip label="In‑clinic & Online" size="small" />
+                    <Chip label="Evidence-based" size="small" color="success" variant="outlined" />
+                    <Chip label="Client‑centric" size="small" variant="outlined" />
+                    <Chip label="In‑clinic & Online" size="small" variant="outlined" />
+                  </Stack>
+                  <Stack direction="row" spacing={1}>
+                    <Tooltip title="Years of practice"><Chip label="7+ yrs" /></Tooltip>
+                    <Tooltip title="Clients served"><Chip label="1000+ clients" /></Tooltip>
                   </Stack>
                   <Button fullWidth variant="contained" href="/appointment">Book Appointment</Button>
                 </Stack>
