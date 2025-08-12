@@ -7,9 +7,28 @@ export default function Contact() {
   useDocumentTitle('Contact');
   const [form, setForm] = React.useState({ name: '', email: '', message: '' });
   const [snackbar, setSnackbar] = React.useState({ open: false, message: '', severity: 'success' });
+  const [submitting, setSubmitting] = React.useState(false);
 
   const onChange = (e) => setForm({ ...form, [e.target.name]: e.target.value });
-  const submit = (e) => { e.preventDefault(); setSnackbar({ open: true, message: 'Thanks! We will get back to you.', severity: 'success' }); setForm({ name: '', email: '', message: '' }); };
+  const submit = async (e) => {
+    e.preventDefault();
+    if (!form.name || !form.email || !form.message) return;
+    try {
+      setSubmitting(true);
+      const res = await fetch('/api/contact', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(form),
+      });
+      if (!res.ok) throw new Error('Failed');
+      setSnackbar({ open: true, message: 'Thanks! Your message has been sent.', severity: 'success' });
+      setForm({ name: '', email: '', message: '' });
+    } catch (err) {
+      setSnackbar({ open: true, message: 'Sorry, failed to send. Please try again later.', severity: 'error' });
+    } finally {
+      setSubmitting(false);
+    }
+  };
 
   return (
     <>
@@ -23,7 +42,7 @@ export default function Contact() {
               <Grid item xs={12} sm={6}><TextField label="Name" name="name" value={form.name} onChange={onChange} fullWidth required /></Grid>
               <Grid item xs={12} sm={6}><TextField label="Email" name="email" type="email" value={form.email} onChange={onChange} fullWidth required /></Grid>
               <Grid item xs={12}><TextField label="Message" name="message" value={form.message} onChange={onChange} fullWidth multiline rows={4} required /></Grid>
-              <Grid item xs={12}><Button type="submit" variant="contained">Send</Button></Grid>
+              <Grid item xs={12}><Button type="submit" variant="contained" disabled={submitting}>{submitting ? 'Sending…' : 'Send'}</Button></Grid>
             </Grid>
           </form>
         </Grid>

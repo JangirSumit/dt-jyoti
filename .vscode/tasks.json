@@ -171,6 +171,13 @@
 			"problemMatcher": [
 				"$eslint-stylish"
 			]
+		},
+		{
+			"label": "Run server",
+			"type": "shell",
+			"command": "npm run server",
+			"args": [],
+			"isBackground": true
 		}
 	]
 }

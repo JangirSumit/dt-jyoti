@@ -6,7 +6,7 @@ import DeleteIcon from '@mui/icons-material/Delete';
 
 export default function Appointment() {
   useDocumentTitle('Appointment');
-  const [booking, setBooking] = useState({ name: '', contact: '', date: '', slot: '' });
+  const [booking, setBooking] = useState({ name: '', contact: '', email: '', date: '', slot: '' });
   const [appointments, setAppointments] = useState([]);
   const [slotsForDate, setSlotsForDate] = useState([]);
   const [snackbar, setSnackbar] = useState({ open: false, message: '', severity: 'success' });
@@ -32,8 +32,8 @@ export default function Appointment() {
 
   const submit = async (e) => {
     e.preventDefault();
-    const { name, contact, date, slot } = booking;
-    if (!name || !contact || !date || !slot) {
+  const { name, contact, email, date, slot } = booking;
+  if (!name || !contact || !date || !slot) {
       setSnackbar({ open: true, message: 'Please fill all fields.', severity: 'error' });
       return;
     }
@@ -41,8 +41,8 @@ export default function Appointment() {
     if (res.status === 409) { setSnackbar({ open: true, message: 'Slot already booked.', severity: 'error' }); return; }
     if (!res.ok) { setSnackbar({ open: true, message: 'Booking failed.', severity: 'error' }); return; }
     const appt = await res.json();
-    setAppointments((a) => [...a, appt]);
-    setBooking({ name: '', contact: '', date: '', slot: '' });
+  setAppointments((a) => [...a, appt]);
+  setBooking({ name: '', contact: '', email: '', date: '', slot: '' });
     setSlotsForDate([]);
     setSnackbar({ open: true, message: 'Appointment booked!', severity: 'success' });
   };
@@ -65,6 +65,7 @@ export default function Appointment() {
             <Grid container spacing={2}>
           <Grid item xs={12} sm={6}><TextField label="Name" name="name" value={booking.name} onChange={onChange} fullWidth required /></Grid>
           <Grid item xs={12} sm={6}><TextField label="Contact" name="contact" value={booking.contact} onChange={onChange} fullWidth required /></Grid>
+          <Grid item xs={12} sm={6}><TextField label="Email (for confirmation)" name="email" type="email" value={booking.email} onChange={onChange} fullWidth /></Grid>
           <Grid item xs={12} sm={6}><TextField type="date" label="Date" name="date" value={booking.date} onChange={onChange} fullWidth required InputLabelProps={{ shrink: true }} /></Grid>
           <Grid item xs={12} sm={6}>
             <Select name="slot" value={booking.slot} onChange={onChange} fullWidth displayEmpty required>
