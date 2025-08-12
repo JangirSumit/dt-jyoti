@@ -20,6 +20,7 @@ import Blogs from './pages/Blogs';
 import Calculator from './pages/Calculator';
 import Footer from './components/Footer';
 import BlogDetail from './pages/BlogDetail';
+import AIPlans from './pages/AIPlans';
 import "./App.css";
 
 
@@ -192,6 +193,7 @@ export class App extends Component {
               <Route path="/blogs" element={<Blogs />} />
               <Route path="/blogs/:slug" element={<BlogDetail />} />
               <Route path="/calculator" element={<Calculator />} />
+              <Route path="/ai-plans" element={<AIPlans />} />
             </Routes>
           </Container>
           <Footer />

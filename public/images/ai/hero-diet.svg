@@ -1,0 +1,20 @@
+<svg width="1200" height="420" viewBox="0 0 1200 420" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Healthy plate hero">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#e8f5e9"/>
+      <stop offset="100%" stop-color="#e3f2fd"/>
+    </linearGradient>
+  </defs>
+  <rect width="1200" height="420" fill="url(#bg)"/>
+  <g transform="translate(180,40)">
+    <circle cx="220" cy="170" r="140" fill="#ffffff" stroke="#a5d6a7" stroke-width="8"/>
+    <path d="M220 30 A140 140 0 0 1 360 170 L220 170 Z" fill="#81c784"/>
+    <path d="M220 170 L360 170 A140 140 0 0 1 220 310 Z" fill="#64b5f6"/>
+    <path d="M220 30 A140 140 0 0 0 80 170 L220 170 Z" fill="#ffcc80"/>
+    <circle cx="510" cy="140" r="16" fill="#66bb6a"/>
+    <rect x="500" y="160" width="140" height="24" rx="12" fill="#66bb6a"/>
+    <rect x="500" y="196" width="180" height="24" rx="12" fill="#42a5f5"/>
+  </g>
+  <text x="640" y="180" font-family="'Inter', Arial, sans-serif" font-weight="800" font-size="44" fill="#1b5e20">Personalized Diet Plans</text>
+  <text x="640" y="225" font-family="'Inter', Arial, sans-serif" font-size="20" fill="#1b5e20" opacity="0.8">AI-assisted, nutritionist approved</text>
+</svg>
