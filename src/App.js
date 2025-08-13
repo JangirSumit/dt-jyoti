@@ -10,7 +10,7 @@ import Button from "@mui/material/Button";
 import Grid from "@mui/material/Grid";
 import Snackbar from "@mui/material/Snackbar";
 import Alert from "@mui/material/Alert";
-import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
+import { BrowserRouter, Routes, Route, Navigate, Outlet } from 'react-router-dom';
 import NavBar from './components/NavBar';
 import Home from './pages/Home';
 import About from './pages/About';
@@ -33,6 +33,18 @@ function ProtectedRoute({ children }) {
   const token = typeof window !== 'undefined' ? localStorage.getItem('admintoken') : null;
   if (!token) return <Navigate to="/admin/login" replace />;
   return children;
+}
+
+function PublicLayout() {
+  return (
+    <>
+      <NavBar />
+      <Container maxWidth="lg" style={{ marginTop: 30 }}>
+        <Outlet />
+      </Container>
+      <Footer />
+    </>
+  );
 }
 
 
@@ -195,9 +207,8 @@ export class App extends Component {
     return (
       <div className="App">
   <BrowserRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
-          <NavBar />
-          <Container maxWidth="lg" style={{ marginTop: 30 }}>
-            <Routes>
+          <Routes>
+            <Route element={<PublicLayout />}>
               <Route path="/" element={<Home />} />
               <Route path="/about" element={<About />} />
               <Route path="/appointment" element={<Appointment />} />
@@ -207,16 +218,15 @@ export class App extends Component {
               <Route path="/calculator" element={<Calculator />} />
               <Route path="/ai-plans" element={<AIPlans />} />
               <Route path="/admin/login" element={<AdminLogin />} />
-              <Route path="/admin" element={<ProtectedRoute><AdminLayout /></ProtectedRoute>}>
-                <Route index element={<Navigate to="appointments" replace />} />
-                <Route path="appointments" element={<AdminAppointments />} />
-                <Route path="patients" element={<AdminPatients />} />
-                <Route path="blogs/new" element={<AdminBlogNew />} />
-                <Route path="prescriptions" element={<AdminPrescriptions />} />
-              </Route>
-            </Routes>
-          </Container>
-          <Footer />
+            </Route>
+            <Route path="/admin" element={<ProtectedRoute><AdminLayout /></ProtectedRoute>}>
+              <Route index element={<Navigate to="appointments" replace />} />
+              <Route path="appointments" element={<AdminAppointments />} />
+              <Route path="patients" element={<AdminPatients />} />
+              <Route path="blogs/new" element={<AdminBlogNew />} />
+              <Route path="prescriptions" element={<AdminPrescriptions />} />
+            </Route>
+          </Routes>
         </BrowserRouter>
   <Container maxWidth="lg" style={{ marginTop: 30 }}>
           <Paper elevation={3} style={{ padding: 24, marginBottom: 32, display: 'none' }}>

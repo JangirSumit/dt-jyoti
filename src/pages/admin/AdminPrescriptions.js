@@ -24,9 +24,9 @@ export default function AdminPrescriptions() {
   return (
     <div>
       <Typography variant="h5" gutterBottom>Generate Prescription</Typography>
-      <Paper sx={{ p: 2 }}>
+    <Paper sx={{ p: { xs: 1.5, md: 2 } }}>
         <form onSubmit={save}>
-          <Grid container spacing={2}>
+      <Grid container spacing={1.5}>
             <Grid item xs={12} md={6}>
               <FormControl fullWidth>
                 <InputLabel id="patient-label">Patient</InputLabel>
@@ -36,7 +36,7 @@ export default function AdminPrescriptions() {
               </FormControl>
             </Grid>
             <Grid item xs={12}>
-              <TextField label="Prescription" value={content} onChange={(e)=> setContent(e.target.value)} fullWidth multiline rows={10} />
+              <TextField label="Prescription" value={content} onChange={(e)=> setContent(e.target.value)} fullWidth multiline rows={10} inputProps={{ style: { lineHeight: 1.35 } }} />
             </Grid>
             <Grid item xs={12}><Button type="submit" variant="contained">Save</Button></Grid>
           </Grid>

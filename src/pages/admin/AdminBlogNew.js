@@ -15,13 +15,13 @@ export default function AdminBlogNew() {
   return (
     <div>
       <Typography variant="h5" gutterBottom>Add Blog</Typography>
-      <Paper sx={{ p: 2 }}>
+      <Paper sx={{ p: { xs: 1.5, md: 2 } }}>
         <form onSubmit={submit}>
-          <Grid container spacing={2}>
+          <Grid container spacing={1.5}>
             <Grid item xs={12} md={4}><TextField label="Slug" name="slug" value={form.slug} onChange={onChange} fullWidth required helperText="lowercase-with-hyphens"/></Grid>
             <Grid item xs={12} md={8}><TextField label="Title" name="title" value={form.title} onChange={onChange} fullWidth required /></Grid>
-            <Grid item xs={12}><TextField label="Cover URL" name="cover" value={form.cover} onChange={onChange} fullWidth placeholder="/images/abstract/a1.svg"/></Grid>
-            <Grid item xs={12}><TextField label="Content (Markdown)" name="content" value={form.content} onChange={onChange} fullWidth multiline rows={12} required /></Grid>
+            <Grid item xs={12}><TextField label="Cover URL" name="cover" value={form.cover} onChange={onChange} fullWidth placeholder="/images/abstract/a1.svg" inputProps={{ style: { wordBreak: 'break-all' } }} /></Grid>
+            <Grid item xs={12}><TextField label="Content (Markdown)" name="content" value={form.content} onChange={onChange} fullWidth multiline rows={12} required inputProps={{ style: { lineHeight: 1.35 } }} /></Grid>
             <Grid item xs={12}><Button type="submit" variant="contained">Publish</Button> {status}</Grid>
           </Grid>
         </form>

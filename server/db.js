@@ -12,7 +12,8 @@ function connect() {
   });
 }
 
-function run(sql, params = []) {
+function run(sql, ...params) {
+  if (params.length === 1 && Array.isArray(params[0])) params = params[0];
   return new Promise((resolve, reject) => {
     db.run(sql, params, function (err) {
       if (err) reject(err); else resolve(this);
@@ -20,7 +21,8 @@ function run(sql, params = []) {
   });
 }
 
-function get(sql, params = []) {
+function get(sql, ...params) {
+  if (params.length === 1 && Array.isArray(params[0])) params = params[0];
   return new Promise((resolve, reject) => {
     db.get(sql, params, (err, row) => {
       if (err) reject(err); else resolve(row);
@@ -28,7 +30,8 @@ function get(sql, params = []) {
   });
 }
 
-function all(sql, params = []) {
+function all(sql, ...params) {
+  if (params.length === 1 && Array.isArray(params[0])) params = params[0];
   return new Promise((resolve, reject) => {
     db.all(sql, params, (err, rows) => {
       if (err) reject(err); else resolve(rows);

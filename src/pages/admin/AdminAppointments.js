@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { Paper, Typography, Box, IconButton } from '@mui/material';
+import { Paper, Typography, IconButton, Grid } from '@mui/material';
 import DeleteIcon from '@mui/icons-material/Delete';
 
 export default function AdminAppointments() {
@@ -19,11 +19,19 @@ export default function AdminAppointments() {
     <div>
       <Typography variant="h5" gutterBottom>Appointments</Typography>
       {appointments.length === 0 ? <Typography>No appointments.</Typography> : appointments.map((a) => (
-        <Paper key={a.id} sx={{ p: 1.5, my: 1, display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderRadius: 2 }}>
-          <Box>
-            <Typography><b>{a.name}</b> ({a.contact}{a.email ? `, ${a.email}` : ''}) — {a.date} @ {a.slot}</Typography>
-          </Box>
-          <IconButton color="error" onClick={() => cancel(a.id)}><DeleteIcon /></IconButton>
+        <Paper key={a.id} sx={{ p: { xs: 1.25, md: 1.5 }, my: 1, borderRadius: 2 }}>
+          <Grid container spacing={0.5} alignItems="center">
+            <Grid item xs={10} md={11}>
+              <Typography sx={{ fontWeight: 600, fontSize: { xs: '0.95rem', md: '1rem' }, wordBreak: 'break-word', overflowWrap: 'anywhere' }}>{a.name}</Typography>
+              <Typography sx={{ color: 'text.secondary', fontSize: { xs: '0.85rem', md: '0.95rem' }, wordBreak: 'break-word', overflowWrap: 'anywhere' }}>
+                {a.contact}{a.email ? ` • ${a.email}` : ''}
+              </Typography>
+              <Typography sx={{ fontSize: { xs: '0.85rem', md: '0.95rem' } }}>{a.date} @ {a.slot}</Typography>
+            </Grid>
+            <Grid item xs={2} md={1} sx={{ display: 'flex', justifyContent: { xs: 'flex-end', md: 'center' } }}>
+              <IconButton color="error" onClick={() => cancel(a.id)} aria-label={`Delete appointment for ${a.name}`} size="small"><DeleteIcon /></IconButton>
+            </Grid>
+          </Grid>
         </Paper>
       ))}
     </div>
