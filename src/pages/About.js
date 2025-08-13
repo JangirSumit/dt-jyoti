@@ -1,114 +1,159 @@
-import React from 'react';
-import { Typography, Paper, Grid, Box, Chip, Divider, List, ListItem, ListItemText, Card, CardContent, Stack, Avatar, Tooltip } from '@mui/material';
+import React, { useEffect, useRef } from 'react';
+import { Typography, Paper, Grid, Box, Chip, Divider, Card, CardContent, Stack, Avatar, Tooltip } from '@mui/material';
 import Button from '@mui/material/Button';
-import Banner from '../components/Banner';
 import useDocumentTitle from '../hooks/useDocumentTitle';
 import SEO from '../components/SEO';
+import CheckCircleIcon from '@mui/icons-material/CheckCircle';
+import Section from '../components/Section';
 
 export default function About() {
   useDocumentTitle('About');
+  const revealRef = useRef([]);
+  useEffect(() => {
+    const els = revealRef.current.filter(Boolean);
+    if (!els.length) return;
+    const io = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((e) => {
+          if (e.isIntersecting) e.target.classList.add('reveal-in');
+        });
+      },
+      { threshold: 0.2 }
+    );
+    els.forEach((el) => io.observe(el));
+    return () => io.disconnect();
+  }, []);
   return (
     <>
-  <SEO title="About – Dietitian Jyoti" description="Clinical dietitian with 7+ years experience. Personalized, practical, and evidence-based nutrition." canonical="/about" image="/images/banner-about.svg" />
-      <Banner src="/images/banner-about.svg" alt="About banner" />
-      <Paper sx={{ p: { xs: 2, md: 4 }, borderRadius: 3 }}>
-        <Grid container spacing={4}>
-          {/* Left profile card */}
-          <Grid item xs={12} md={4}>
-            <Card sx={{ borderRadius: 3, overflow: 'hidden', position: 'relative' }}>
-              <Box sx={{ height: 120, background: 'linear-gradient(120deg,#eef7f5,#f2f7fb)' }} />
-              <CardContent>
-                <Stack alignItems="center" spacing={2} sx={{ mt: -8 }}>
-                  <Avatar src="/images/humans/dietitian.svg" alt="Dt. Jyoti" sx={{ width: 120, height: 120, border: '4px solid #fff' }} />
-                  <Box sx={{ textAlign: 'center' }}>
-                    <Typography variant="h6" sx={{ fontWeight: 800 }}>Dt. Jyoti Jangid</Typography>
-                    <Typography variant="body2" color="text.secondary">Dietitian & Nutritionist</Typography>
-                  </Box>
-                  <Stack direction="row" spacing={1} flexWrap="wrap" justifyContent="center">
-                    <Chip label="Evidence-based" size="small" color="success" variant="outlined" />
-                    <Chip label="Client‑centric" size="small" variant="outlined" />
-                    <Chip label="In‑clinic & Online" size="small" variant="outlined" />
-                  </Stack>
-                  <Stack direction="row" spacing={1}>
-                    <Tooltip title="Years of practice"><Chip label="7+ yrs" /></Tooltip>
-                    <Tooltip title="Clients served"><Chip label="1000+ clients" /></Tooltip>
-                  </Stack>
-                  <Button fullWidth variant="contained" href="/appointment">Book Appointment</Button>
-                </Stack>
-              </CardContent>
-            </Card>
+      <SEO title="About – Dietitian Jyoti" description="Clinical dietitian with 7+ years of experience. Personalized, practical, and evidence-based nutrition care." canonical="/about" image="/images/banner-about.svg" />
+
+      {/* Hero */}
+      <Section>
+      <Paper className="reveal" ref={(el) => (revealRef.current[0] = el)} sx={{
+        p: { xs: 3, md: 5 },
+        borderRadius: 4,
+        position: 'relative',
+        overflow: 'hidden',
+        background: 'linear-gradient(135deg,#e7f5ef,#e9f0fb)'
+      }}>
+        <Box sx={{ position: 'absolute', inset: 0, opacity: 0.5, pointerEvents: 'none' }}>
+          <Box className="float-y-1" sx={{ position: 'absolute', top: -24, left: -24, width: 140, height: 140, borderRadius: '50%', filter: 'blur(26px)', background: 'radial-gradient(circle, rgba(76,175,80,.25), transparent 60%)' }} />
+          <Box className="float-y-2" sx={{ position: 'absolute', bottom: -28, right: -28, width: 160, height: 160, borderRadius: '50%', filter: 'blur(28px)', background: 'radial-gradient(circle, rgba(33,150,243,.22), transparent 60%)' }} />
+        </Box>
+        <Grid container spacing={3} alignItems="center">
+          <Grid item xs={12} md={7}>
+            <Stack spacing={1.5}>
+              <Typography variant="overline" color="text.secondary">Dietitian & Nutritionist</Typography>
+              <Typography variant="h3" sx={{ fontWeight: 800, lineHeight: 1.1 }}>Dt. Jyoti Jangid</Typography>
+              <Typography variant="h6" color="text.secondary">
+                I help you build sustainable nutrition habits with practical, culturally relevant plans—grounded in clinical nutrition.
+              </Typography>
+              <Stack direction="row" spacing={1} flexWrap="wrap">
+                <Chip label="Evidence‑based" color="success" size="small" variant="outlined" />
+                <Chip label="Client‑centric" size="small" variant="outlined" />
+                <Chip label="In‑clinic & Online" size="small" variant="outlined" />
+              </Stack>
+              <Stack direction={{ xs: 'column', sm: 'row' }} spacing={1.5} sx={{ mt: 1 }}>
+                <Button variant="contained" size="large" href="/appointment">Book appointment</Button>
+                <Button variant="outlined" size="large" href="/ai-plans" color="secondary">Explore AI plans</Button>
+              </Stack>
+            </Stack>
           </Grid>
-
-          {/* Right content */}
-          <Grid item xs={12} md={8}>
-            <Typography variant="h4" gutterBottom>About</Typography>
-            <Typography paragraph>
-              I help individuals and families build sustainable nutrition habits with practical, culturally relevant plans.
-              My approach combines medical nutrition therapy with behavior coaching—so you not only receive a plan, you learn how to make it work in real life.
-            </Typography>
-
-            <Divider sx={{ my: 2 }} />
-            <Typography variant="h6" gutterBottom>Areas of Focus</Typography>
-            <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1, mb: 2 }}>
-              {['Weight Management','Diabetes Care','PCOS/PCOD','Thyroid Health','Heart Health','Liver & Renal Support','Pregnancy & Lactation','Child & Teen Nutrition','Digestive Health','Gluten‑free & Intolerances','Sports Nutrition'].map(t => <Chip key={t} label={t} />)}
-            </Box>
-
-            <Typography variant="h6" gutterBottom>How I Work</Typography>
-            <Typography component="ul" sx={{ pl: 2, mb: 2 }}>
-              <li>Comprehensive assessment: history, routine, preferences, and labs (if applicable)</li>
-              <li>Personalized meal planning: Indian and global options, easy to follow</li>
-              <li>Habit coaching: portion guidance, smart swaps, and mindful routines</li>
-              <li>Progress reviews: iterative adjustments to keep results on track</li>
-            </Typography>
-
-            <Grid container spacing={3}>
-              <Grid item xs={12} md={6}>
-                <Typography variant="h6" gutterBottom>Specializations</Typography>
-                <List dense>
-                  <ListItem disableGutters>
-                    <ListItemText primary="Dietitian/Nutritionist" />
-                  </ListItem>
-                </List>
-
-                <Typography variant="h6" gutterBottom sx={{ mt: 2 }}>Awards and Recognitions</Typography>
-                <List dense>
-                  <ListItem disableGutters>
-                    <ListItemText primary="Best Dietitian - 2017" />
-                  </ListItem>
-                </List>
-
-                <Typography variant="h6" gutterBottom sx={{ mt: 2 }}>Education</Typography>
-                <List dense>
-                  <ListItem disableGutters>
-                    <ListItemText primary="MSc - Dietitics / Nutrition" secondary="Amity University, Gurgaon, 2014" />
-                  </ListItem>
-                </List>
-
-                <Typography variant="h6" gutterBottom sx={{ mt: 2 }}>Memberships</Typography>
-                <List dense>
-                  <ListItem disableGutters>
-                    <ListItemText primary="Indian Dietetic Association" />
-                  </ListItem>
-                </List>
-              </Grid>
-              <Grid item xs={12} md={6}>
-                <Typography variant="h6" gutterBottom>Experience</Typography>
-                <List dense>
-                  <ListItem disableGutters>
-                    <ListItemText primary="2014 - 2015" secondary="Clinical Dietitian at Sir Ganga Ram Kolmet Hospital" />
-                  </ListItem>
-                  <ListItem disableGutters>
-                    <ListItemText primary="2015 - 2018" secondary="Senior Nutritionist at Park Group of Hospitals" />
-                  </ListItem>
-                  <ListItem disableGutters>
-                    <ListItemText primary="2018 - 2018" secondary="Senior Nutritionist at Jyoti Hospital" />
-                  </ListItem>
-                </List>
-              </Grid>
-            </Grid>
+          <Grid item xs={12} md={5}>
+            <Stack alignItems="center" spacing={2}>
+              <Avatar src="/images/humans/dietitian.svg" alt="Dt. Jyoti" sx={{ width: 140, height: 140, border: '4px solid #fff', boxShadow: 2 }} />
+              <Stack direction="row" spacing={1}>
+                <Tooltip title="Years of practice"><Chip label="7+ yrs" /></Tooltip>
+                <Tooltip title="Clients served"><Chip label="1000+ clients" /></Tooltip>
+                <Tooltip title="Avg. rating"><Chip label="4.9/5" /></Tooltip>
+              </Stack>
+            </Stack>
           </Grid>
         </Grid>
-      </Paper>
+  </Paper>
+  </Section>
+
+      {/* Philosophy & Specialties */}
+      <Grid container spacing={{ xs: 3, md: 4 }}>
+  <Grid item xs={12} md={6} className="reveal" ref={(el) => (revealRef.current[1] = el)}>
+          <Card elevation={2} sx={{ borderRadius: 3, height: '100%' }}>
+            <CardContent>
+              <Typography variant="h5" gutterBottom>My philosophy</Typography>
+              <Stack spacing={1.2}>
+                {[ 'Nutrition that fits your life, not the other way around.', 'Small, consistent changes lead to sustainable results.', 'Education first—so you understand the why behind each step.', 'Flexible plans with Indian & world cuisines.' ].map((t) => (
+                  <Stack key={t} direction="row" spacing={1} alignItems="flex-start">
+                    <CheckCircleIcon color="success" fontSize="small" style={{ marginTop: 2 }} />
+                    <Typography>{t}</Typography>
+                  </Stack>
+                ))}
+              </Stack>
+            </CardContent>
+          </Card>
+        </Grid>
+        <Grid item xs={12} md={6} className="reveal" ref={(el) => (revealRef.current[2] = el)}>
+          <Card elevation={2} sx={{ borderRadius: 3, height: '100%' }}>
+            <CardContent>
+              <Typography variant="h5" gutterBottom>Specialties</Typography>
+              <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1 }}>
+                {['Weight Management','Diabetes Care','PCOS/PCOD','Thyroid Health','Heart Health','Liver & Renal','Pregnancy & Lactation','Child & Teen','Digestive Health','Gluten‑free','Sports Nutrition'].map(t => <Chip key={t} label={t} />)}
+              </Box>
+            </CardContent>
+          </Card>
+        </Grid>
+      </Grid>
+
+  {/* Approach steps */}
+  <Section>
+  <Paper className="reveal" ref={(el) => (revealRef.current[3] = el)} sx={{ p: { xs: 2, md: 3 }, borderRadius: 3 }}>
+        <Typography variant="h5" gutterBottom>How we’ll work together</Typography>
+        <Grid container spacing={{ xs: 2, md: 3 }}>
+          {[
+            { n: '1', t: 'Assess', d: 'History, lifestyle, preferences, and labs (if applicable).' },
+            { n: '2', t: 'Plan', d: 'Personalized meal plan with practical recipes and swaps.' },
+            { n: '3', t: 'Coach', d: 'Portion guidance, habits, and mindful routines that stick.' },
+            { n: '4', t: 'Review', d: 'Regular check-ins and adjustments to keep results on track.' }
+          ].map((s) => (
+            <Grid key={s.n} item xs={12} md={3}>
+              <Card variant="outlined" elevation={0} sx={{ borderRadius: 3, height: '100%' }}>
+                <CardContent>
+                  <Box sx={{ width: 36, height: 36, borderRadius: '50%', bgcolor: 'primary.main', color: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 700, mb: 1 }}>{s.n}</Box>
+                  <Typography variant="subtitle1" sx={{ fontWeight: 700 }}>{s.t}</Typography>
+                  <Typography color="text.secondary">{s.d}</Typography>
+                </CardContent>
+              </Card>
+            </Grid>
+          ))}
+        </Grid>
+  </Paper>
+  </Section>
+
+  {/* Credentials compact */}
+  <Section>
+  <Paper className="reveal" ref={(el) => (revealRef.current[4] = el)} sx={{ p: { xs: 2, md: 3 }, borderRadius: 3 }}>
+        <Grid container spacing={{ xs: 2, md: 3 }}>
+          <Grid item xs={12} md={4}>
+            <Typography variant="h6" gutterBottom>Education</Typography>
+            <Typography>MSc – Dietetics & Nutrition</Typography>
+            <Typography color="text.secondary">Amity University, Gurgaon (2014)</Typography>
+          </Grid>
+          <Grid item xs={12} md={4}>
+            <Typography variant="h6" gutterBottom>Experience</Typography>
+            <Typography>Clinical Dietitian</Typography>
+            <Typography color="text.secondary">Sir Ganga Ram Kolmet Hospital</Typography>
+            <Divider sx={{ my: 1 }} />
+            <Typography>Senior Nutritionist</Typography>
+            <Typography color="text.secondary">Park Group of Hospitals</Typography>
+          </Grid>
+          <Grid item xs={12} md={4}>
+            <Typography variant="h6" gutterBottom>Memberships</Typography>
+            <Typography>Indian Dietetic Association</Typography>
+            <Divider sx={{ my: 1 }} />
+            <Typography variant="h6" gutterBottom>Awards</Typography>
+            <Typography>Best Dietitian – 2017</Typography>
+          </Grid>
+        </Grid>
+  </Paper>
+  </Section>
     </>
   );
 }

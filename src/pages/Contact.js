@@ -3,6 +3,7 @@ import { Paper, Typography, TextField, Button, Grid, Snackbar, Alert, Box } from
 import Banner from '../components/Banner';
 import useDocumentTitle from '../hooks/useDocumentTitle';
 import SEO from '../components/SEO';
+import Section from '../components/Section';
 
 export default function Contact() {
   useDocumentTitle('Contact');
@@ -35,6 +36,7 @@ export default function Contact() {
     <>
   <SEO title="Contact – Dietitian Jyoti" description="Have a question? Get in touch for clinic timings, online consults, or general queries." canonical="/contact" image="/images/banner-contact.svg" />
       <Banner src="/images/banner-contact.svg" alt="Contact banner" />
+  <Section>
   <Paper sx={{ p: { xs: 2, md: 3 } }}>
       <Typography variant="h4" gutterBottom>Contact Me</Typography>
       <Grid container spacing={3}>
@@ -61,7 +63,8 @@ export default function Contact() {
       <Snackbar open={snackbar.open} autoHideDuration={3000} onClose={() => setSnackbar((s) => ({ ...s, open: false }))}>
         <Alert severity={snackbar.severity} variant="filled">{snackbar.message}</Alert>
       </Snackbar>
-      </Paper>
+    </Paper>
+  </Section>
     </>
   );
 }

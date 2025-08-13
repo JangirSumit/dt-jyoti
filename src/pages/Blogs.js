@@ -5,6 +5,7 @@ import Banner from '../components/Banner';
 import { Link as RouterLink } from 'react-router-dom';
 import useDocumentTitle from '../hooks/useDocumentTitle';
 import SEO from '../components/SEO';
+import Section from '../components/Section';
 
 export default function Blogs() {
   useDocumentTitle('Blogs');
@@ -36,7 +37,8 @@ export default function Blogs() {
     <>
   <SEO title="Nutrition Blog – Dietitian Jyoti" description="Practical guides on diabetes, gut health, hydration, hypertension, intermittent fasting, and more." canonical="/blogs" image="/images/banner-blogs.svg" />
       <Banner src="/images/banner-blogs.svg" alt="Blogs banner" />
-      <Paper sx={{ p: { xs: 2, md: 3 }, borderRadius: 3 }}>
+  <Section>
+  <Paper sx={{ p: { xs: 2, md: 3 }, borderRadius: 3 }}>
         <Stack direction={{ xs: 'column', md: 'row' }} spacing={2} alignItems={{ xs: 'stretch', md: 'center' }} justifyContent="space-between" sx={{ mb: 2 }}>
           <Typography variant="h4">Insights & Guides</Typography>
           <TextField
@@ -137,7 +139,8 @@ export default function Blogs() {
             </Grid>
           )}
         </Grid>
-      </Paper>
+  </Paper>
+  </Section>
     </>
   );
 }

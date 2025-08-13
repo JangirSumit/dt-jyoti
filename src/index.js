@@ -14,8 +14,8 @@ let theme = createTheme({
     mode: 'light',
     primary: { main: '#2e7d32' },
     secondary: { main: '#00838f' },
-  background: { default: '#f3f6f9', paper: '#ffffff' },
-    text: { primary: '#1f2937', secondary: '#6b7280' }
+    background: { default: '#e0e7ef', paper: '#ffffff' },
+    text: { primary: '#111827', secondary: '#6b7280' }
   },
   shape: { borderRadius: 12 },
   typography: {
@@ -28,8 +28,16 @@ let theme = createTheme({
     button: { textTransform: 'none', fontWeight: 600 }
   },
   components: {
+    MuiCssBaseline: {
+      styleOverrides: (themeArg) => ({
+        body: {
+          backgroundColor: themeArg.palette.background.default,
+          color: themeArg.palette.text.primary,
+        },
+      }),
+    },
     MuiAppBar: {
-      styleOverrides: { root: { boxShadow: 'none', borderBottom: '1px solid rgba(0,0,0,0.06)' } }
+      styleOverrides: { root: { boxShadow: 'none', borderBottom: '1px solid rgba(0,0,0,0.08)' } }
     },
     MuiButton: {
       defaultProps: { size: 'medium' },
@@ -38,7 +46,7 @@ let theme = createTheme({
         containedPrimary: { boxShadow: 'none' }
       }
     },
-    MuiPaper: { styleOverrides: { root: { boxShadow: '0 1px 2px rgba(0,0,0,0.04)' } } },
+  MuiPaper: { styleOverrides: { root: { boxShadow: '0 1px 2px rgba(0,0,0,0.04)', border: '1px solid rgba(0,0,0,0.06)' } } },
     MuiCard: { defaultProps: { elevation: 1 } },
     MuiContainer: { defaultProps: { maxWidth: 'lg' } }
   }

@@ -39,7 +39,7 @@ function PublicLayout() {
   return (
     <>
       <NavBar />
-      <Container maxWidth="lg" style={{ marginTop: 30 }}>
+  <Container maxWidth="lg" style={{ marginTop: 30, marginBottom: 30 }}>
         <Outlet />
       </Container>
       <Footer />

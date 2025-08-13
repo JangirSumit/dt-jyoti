@@ -4,6 +4,7 @@ import Banner from '../components/Banner';
 import useDocumentTitle from '../hooks/useDocumentTitle';
 import DeleteIcon from '@mui/icons-material/Delete';
 import SEO from '../components/SEO';
+import Section from '../components/Section';
 
 export default function Appointment() {
   useDocumentTitle('Appointment');
@@ -59,6 +60,7 @@ export default function Appointment() {
     <>
   <SEO title="Book Appointment – Dietitian Jyoti" description="See available slots and book your consultation online in seconds." canonical="/appointment" image="/images/banner-appointment.svg" />
     <Banner src="/images/banner-appointment.svg" alt="Appointment banner" />
+  <Section>
   <Paper sx={{ p: { xs: 2, md: 3 }, borderRadius: 3, boxShadow: 2 }}>
       <Typography variant="h4" gutterBottom>Book Appointment</Typography>
       <form onSubmit={submit}>
@@ -101,7 +103,8 @@ export default function Appointment() {
       <Snackbar open={snackbar.open} autoHideDuration={3000} onClose={() => setSnackbar((s) => ({ ...s, open: false }))}>
         <Alert severity={snackbar.severity} variant="filled">{snackbar.message}</Alert>
       </Snackbar>
-      </Paper>
+    </Paper>
+  </Section>
     </>
   );
 }

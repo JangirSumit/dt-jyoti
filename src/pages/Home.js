@@ -9,6 +9,7 @@ import { Link as RouterLink } from 'react-router-dom';
 import HeroBanner from '../components/HeroBanner';
 import useDocumentTitle from '../hooks/useDocumentTitle';
 import SEO from '../components/SEO';
+import Section from '../components/Section';
 
 export default function Home() {
   useDocumentTitle('Home');
@@ -39,11 +40,11 @@ export default function Home() {
       />
 
       {/* AI spotlight banner */}
+    <Section>
     <Paper
         className="reveal"
         ref={(el) => (revealRef.current[0] = el)}
         sx={{
-      mt: { xs: 4, md: 6 },
           p: { xs: 2.5, md: 4 },
           borderRadius: 4,
           overflow: 'hidden',
@@ -86,9 +87,11 @@ export default function Home() {
             </Box>
           </Grid>
         </Grid>
-      </Paper>
+    </Paper>
+    </Section>
 
-  <Grid container spacing={{ xs: 2, md: 3 }} sx={{ mt: { xs: 2, md: 3 } }}>
+  <Section>
+  <Grid container spacing={{ xs: 2, md: 3 }}>
         <Grid item xs={12} md={4} className="reveal" ref={(el) => (revealRef.current[1] = el)}>
           <Card elevation={2} sx={{ borderRadius: 3, height: '100%', transition: 'all .25s ease', '&:hover': { transform: 'translateY(-6px)', boxShadow: 6 } }}>
             <CardMedia component="img" height="160" image="/images/fruits/bowl.svg" alt="Healthy bowl" sx={{ objectFit: 'cover' }} />
@@ -117,9 +120,11 @@ export default function Home() {
           </Card>
         </Grid>
       </Grid>
+    </Section>
 
       {/* Why choose Dt. Jyoti */}
-  <Paper className="reveal" ref={(el) => (revealRef.current[4] = el)} sx={{ p: { xs: 2, md: 3 }, borderRadius: 3, mt: { xs: 6, md: 8 } }}>
+  <Section>
+  <Paper className="reveal" ref={(el) => (revealRef.current[4] = el)} sx={{ p: { xs: 2, md: 3 }, borderRadius: 3 }}>
         <Typography variant="h5" gutterBottom>Why choose Dt. Jyoti</Typography>
   <Grid container spacing={{ xs: 1.5, md: 2 }}>
           <Grid item xs={12} md={4}>
@@ -165,10 +170,12 @@ export default function Home() {
             </Grid>
           ))}
         </Grid>
-      </Paper>
+    </Paper>
+    </Section>
 
       {/* AI Promo strip */}
-  <Paper className="reveal" ref={(el) => (revealRef.current[5] = el)} sx={{ p: { xs: 2, md: 3 }, borderRadius: 3, mt: { xs: 6, md: 8 }, background: 'linear-gradient(90deg, #e8f5e9, #e3f2fd)' }}>
+  <Section>
+  <Paper className="reveal" ref={(el) => (revealRef.current[5] = el)} sx={{ p: { xs: 2, md: 3 }, borderRadius: 3, background: 'linear-gradient(90deg, #e8f5e9, #e3f2fd)' }}>
         <Grid container alignItems="center" spacing={{ xs: 1.5, md: 2 }}>
           <Grid item xs={12} md={8}>
             <Typography variant="h5" sx={{ fontWeight: 700 }} gutterBottom>AI-powered. Dietitian-designed.</Typography>
@@ -181,9 +188,11 @@ export default function Home() {
           </Grid>
         </Grid>
       </Paper>
+    </Section>
 
       {/* Testimonials */}
-  <Box className="reveal" ref={(el) => (revealRef.current[6] = el)} sx={{ mt: { xs: 6, md: 8 } }}>
+  <Section>
+  <Box className="reveal" ref={(el) => (revealRef.current[6] = el)}>
         <Typography variant="h5" gutterBottom>What clients say</Typography>
   <Grid container spacing={{ xs: 2, md: 2 }}>
           {[
@@ -204,7 +213,8 @@ export default function Home() {
             </Grid>
           ))}
         </Grid>
-      </Box>
+  </Box>
+  </Section>
     </Box>
   );
 }

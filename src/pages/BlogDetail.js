@@ -7,6 +7,7 @@ import remarkGfm from 'remark-gfm';
 import Banner from '../components/Banner';
 import useDocumentTitle from '../hooks/useDocumentTitle';
 import SEO from '../components/SEO';
+import Section from '../components/Section';
 
 export default function BlogDetail() {
   const { slug } = useParams();
@@ -60,8 +61,9 @@ export default function BlogDetail() {
         type="article"
         article={{ title, publishedTime: new Date().toISOString(), author: 'Dietitian Jyoti' }}
       />
-      {cover && <Banner src={cover} alt={title} />}
-      <Paper sx={{ p: { xs: 2, md: 3 }, borderRadius: 3 }}>
+  {cover && <Banner src={cover} alt={title} />}
+  <Section>
+  <Paper sx={{ p: { xs: 2, md: 3 }, borderRadius: 3 }}>
         <Stack direction="row" spacing={1} alignItems="center" sx={{ mb: 1 }}>
           <Button component={RouterLink} to="/blogs" size="small">&larr; Back</Button>
           <Box sx={{ flexGrow: 1 }} />
@@ -94,7 +96,8 @@ export default function BlogDetail() {
             }}
           >{content}</ReactMarkdown>
         </Box>
-      </Paper>
+  </Paper>
+  </Section>
     </>
   );
 }

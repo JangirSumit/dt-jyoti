@@ -1,7 +1,5 @@
 body {
   scroll-behavior: smooth;
-  background-color: #f3f6f9; /* aligns with theme background.default for contrast */
-  color: #303960;
 }
 
 .App {
