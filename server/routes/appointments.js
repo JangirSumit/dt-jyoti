@@ -3,6 +3,8 @@ const { v4: uuidv4 } = require('uuid');
 const { getDb } = require('../db');
 const nodemailer = require('nodemailer');
 const { escapeHtml } = require('../utils/escape');
+const { createInvite } = require('../utils/ics');
+const { sendSms } = require('../utils/sms');
 
 const router = Router();
 
@@ -38,9 +40,21 @@ router.get('/', async (req, res) => {
 
 router.post('/', async (req, res) => {
   try {
-    const { name, contact, date, slot, email } = req.body || {};
+    const { name, contact, date, slot, email, otpToken } = req.body || {};
     if (!name || !contact || !date || !slot) {
       return res.status(400).json({ error: 'name, contact, date, slot are required' });
+    }
+    // Verify OTP token for given contact (30 min window)
+    try {
+      const db = await getDb();
+      const token = otpToken || String(req.headers['x-otp-token'] || '');
+      if (!token) return res.status(401).json({ error: 'verification required' });
+      const v = await db.get('SELECT * FROM verifications WHERE token = ? LIMIT 1', token);
+      if (!v) return res.status(401).json({ error: 'invalid verification' });
+      if (v.contact !== String(contact).replace(/\D/g, '')) return res.status(401).json({ error: 'contact mismatch' });
+      if (new Date(v.expires_at).getTime() < Date.now()) return res.status(401).json({ error: 'verification expired' });
+    } catch (ve) {
+      return res.status(401).json({ error: 'verification failed' });
     }
     const db = await getDb();
     const existing = await db.get('SELECT 1 FROM appointments WHERE date = ? AND slot = ? LIMIT 1', date, slot);
@@ -55,17 +69,40 @@ router.post('/', async (req, res) => {
       const toAdmin = process.env.CONTACT_TO || process.env.SMTP_USER || 'noreply@example.com';
       const fromAddr = process.env.MAIL_FROM || `"${site} Appointments" <${process.env.SMTP_USER || 'noreply@example.com'}>`;
 
+      // Create a simple online meeting link (free Jitsi room)
+      const room = `dtjyoti-${appt.id}`;
+      const meetingUrl = `https://meet.jit.si/${room}`;
+
+      // Build ICS invite for 30 minutes duration in UTC
+      const [h, m, ampm] = slot.split(/[: ]/); // naive parse like '10:00 AM'
+      let hour = Number(h) % 12; if ((ampm || '').toUpperCase() === 'PM') hour += 12;
+      const startLocal = new Date(`${date}T${String(hour).padStart(2,'0')}:${m || '00'}:00`);
+      const endLocal = new Date(startLocal.getTime() + 30 * 60000);
+      const ics = createInvite({
+        uid: `${appt.id}@dt-jyoti`,
+        start: startLocal,
+        end: endLocal,
+        summary: `Consultation with ${site}`,
+        description: `Your consultation is scheduled. Join: ${meetingUrl}`,
+        location: 'Online',
+        organizerEmail: toAdmin,
+        attendeeEmail: email || ''
+      });
+
       await transporter.sendMail({
         from: fromAddr,
         to: toAdmin,
         subject: `New appointment: ${name} – ${date} @ ${slot}`,
-        text: `New appointment booked on ${site}.\n\nName: ${name}\nContact: ${contact}\nEmail: ${email || '-'}\nDate: ${date}\nSlot: ${slot}\n` ,
+        text: `New appointment booked on ${site}.\n\nName: ${name}\nContact: ${contact}\nEmail: ${email || '-'}\nDate: ${date}\nSlot: ${slot}\nMeet: ${meetingUrl}\n` ,
         html: `<p><b>New appointment booked</b> on ${site}.</p>
                <p><b>Name:</b> ${escapeHtml(name)}<br/>
                <b>Contact:</b> ${escapeHtml(contact)}<br/>
                <b>Email:</b> ${escapeHtml(email || '-') }<br/>
                <b>Date:</b> ${escapeHtml(date)}<br/>
-               <b>Slot:</b> ${escapeHtml(slot)}</p>`
+               <b>Slot:</b> ${escapeHtml(slot)}<br/>
+               <b>Meet:</b> <a href="${meetingUrl}">${meetingUrl}</a></p>`,
+        alternatives: [{ contentType: 'text/calendar; method=REQUEST', content: ics }],
+        icalEvent: { filename: 'invite.ics', method: 'REQUEST', content: ics }
       });
 
       if (email && /.+@.+\..+/.test(String(email))) {
@@ -73,15 +110,21 @@ router.post('/', async (req, res) => {
           from: fromAddr,
           to: email,
           subject: `Your appointment is confirmed – ${date} @ ${slot}`,
-          text: `Hello ${name},\n\nYour appointment is confirmed.\nDate: ${date}\nSlot: ${slot}\n\nIf you need to reschedule, reply to this email.\n\n— ${site}`,
+          text: `Hello ${name},\n\nYour appointment is confirmed.\nDate: ${date}\nSlot: ${slot}\nJoin: ${meetingUrl}\n\nIf you need to reschedule, reply to this email.\n\n— ${site}`,
           html: `<p>Hello ${escapeHtml(name)},</p>
                  <p>Your appointment is <b>confirmed</b>.</p>
                  <p><b>Date:</b> ${escapeHtml(date)}<br/>
-                 <b>Slot:</b> ${escapeHtml(slot)}</p>
+                 <b>Slot:</b> ${escapeHtml(slot)}<br/>
+                 <b>Join:</b> <a href="${meetingUrl}">${meetingUrl}</a></p>
                  <p>If you need to reschedule, just reply to this email.</p>
-                 <p>— ${escapeHtml(site)}</p>`
+                 <p>— ${escapeHtml(site)}</p>`,
+          alternatives: [{ contentType: 'text/calendar; method=REQUEST', content: ics }],
+          icalEvent: { filename: 'invite.ics', method: 'REQUEST', content: ics }
         });
       }
+
+      // SMS confirmation (optional)
+      try { await sendSms(contact, `Appt ${date} ${slot}. Join: ${meetingUrl}`); } catch {}
     } catch (mailErr) {
       console.warn('Appointment mail notification failed:', mailErr.message);
     }

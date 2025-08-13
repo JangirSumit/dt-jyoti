@@ -47,6 +47,22 @@ async function init() {
   await run(`CREATE UNIQUE INDEX IF NOT EXISTS idx_appointments_date_slot ON appointments(date, slot)`);
   await run(`CREATE TABLE IF NOT EXISTS patients (id TEXT PRIMARY KEY, name TEXT NOT NULL, contact TEXT NOT NULL, email TEXT, notes TEXT)`);
   await run(`CREATE TABLE IF NOT EXISTS prescriptions (id TEXT PRIMARY KEY, patient_id TEXT NOT NULL, date TEXT NOT NULL, content TEXT NOT NULL, FOREIGN KEY(patient_id) REFERENCES patients(id) ON DELETE CASCADE)`);
+  await run(`CREATE TABLE IF NOT EXISTS otps (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    contact TEXT NOT NULL,
+    code TEXT NOT NULL,
+    created_at TEXT NOT NULL,
+    expires_at TEXT NOT NULL,
+    attempts INTEGER NOT NULL DEFAULT 0,
+    used INTEGER NOT NULL DEFAULT 0
+  )`);
+  await run(`CREATE INDEX IF NOT EXISTS idx_otps_contact_created ON otps(contact, created_at)`);
+  await run(`CREATE TABLE IF NOT EXISTS verifications (
+    token TEXT PRIMARY KEY,
+    contact TEXT NOT NULL,
+    created_at TEXT NOT NULL,
+    expires_at TEXT NOT NULL
+  )`);
 }
 
 function getDb() {
