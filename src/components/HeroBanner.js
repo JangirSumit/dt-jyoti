@@ -34,12 +34,12 @@ export default function HeroBanner({ title, subtitle, ctaText, ctaTo, imageSrc }
           <Typography variant="h3" sx={{ fontWeight: 800 }} gutterBottom>{title}</Typography>
           <Typography variant="h6" color="text.secondary" gutterBottom>{subtitle}</Typography>
           {ctaText && (
-            <Button variant="contained" size="large" component={RouterLink} to={ctaTo} sx={{ mt: 2 }}>{ctaText}</Button>
+            <Button className="btn-shimmer" variant="contained" size="large" component={RouterLink} to={ctaTo} sx={{ mt: 2 }}>{ctaText}</Button>
           )}
         </Box>
         {imageSrc && (
           <Box sx={{ flex: 1, display: 'flex', justifyContent: 'center', position: 'relative', zIndex: 1 }}>
-            <Box component="img" src={imageSrc} alt="banner" sx={{ width: { xs: 220, md: 300 }, borderRadius: 4, boxShadow: 2 }} />
+            <Box component="img" className="float-y-1" src={imageSrc} alt="banner" sx={{ width: { xs: 220, md: 300 }, borderRadius: 4, boxShadow: 2 }} />
           </Box>
         )}
       </Stack>
