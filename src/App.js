@@ -10,7 +10,7 @@ import Button from "@mui/material/Button";
 import Grid from "@mui/material/Grid";
 import Snackbar from "@mui/material/Snackbar";
 import Alert from "@mui/material/Alert";
-import { BrowserRouter, Routes, Route } from 'react-router-dom';
+import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import NavBar from './components/NavBar';
 import Home from './pages/Home';
 import About from './pages/About';
@@ -21,7 +21,19 @@ import Calculator from './pages/Calculator';
 import Footer from './components/Footer';
 import BlogDetail from './pages/BlogDetail';
 import AIPlans from './pages/AIPlans';
+import AdminLayout from './pages/admin/AdminLayout';
+import AdminAppointments from './pages/admin/AdminAppointments';
+import AdminPatients from './pages/admin/AdminPatients';
+import AdminBlogNew from './pages/admin/AdminBlogNew';
+import AdminPrescriptions from './pages/admin/AdminPrescriptions';
+import AdminLogin from './pages/admin/Login';
 import "./App.css";
+
+function ProtectedRoute({ children }) {
+  const token = typeof window !== 'undefined' ? localStorage.getItem('admintoken') : null;
+  if (!token) return <Navigate to="/admin/login" replace />;
+  return children;
+}
 
 
 export class App extends Component {
@@ -194,6 +206,14 @@ export class App extends Component {
               <Route path="/blogs/:slug" element={<BlogDetail />} />
               <Route path="/calculator" element={<Calculator />} />
               <Route path="/ai-plans" element={<AIPlans />} />
+              <Route path="/admin/login" element={<AdminLogin />} />
+              <Route path="/admin" element={<ProtectedRoute><AdminLayout /></ProtectedRoute>}>
+                <Route index element={<Navigate to="appointments" replace />} />
+                <Route path="appointments" element={<AdminAppointments />} />
+                <Route path="patients" element={<AdminPatients />} />
+                <Route path="blogs/new" element={<AdminBlogNew />} />
+                <Route path="prescriptions" element={<AdminPrescriptions />} />
+              </Route>
             </Routes>
           </Container>
           <Footer />

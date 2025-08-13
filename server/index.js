@@ -3,6 +3,7 @@ const cors = require('cors');
 const bodyParser = require('body-parser');
 const { v4: uuidv4 } = require('uuid');
 const nodemailer = require('nodemailer');
+const { init, getDb } = require('./db');
 
 const app = express();
 const PORT = process.env.PORT || 4000;
@@ -10,26 +11,24 @@ const PORT = process.env.PORT || 4000;
 app.use(cors());
 app.use(bodyParser.json());
 
-// In-memory store (replace with DB in production)
-const state = {
-  slots: [
-    '09:00 AM', '10:00 AM', '11:00 AM', '12:00 PM', '02:00 PM', '03:00 PM', '04:00 PM'
-  ],
-  appointments: [] // {id, name, contact, date, slot}
-};
+const SLOTS = ['09:00 AM','10:00 AM','11:00 AM','12:00 PM','02:00 PM','03:00 PM','04:00 PM'];
 
 // Get available slots for a date
-app.get('/api/slots', (req, res) => {
+app.get('/api/slots', async (req, res) => {
   const { date } = req.query;
   if (!date) return res.status(400).json({ error: 'date is required' });
-  const booked = state.appointments.filter(a => a.date === date).map(a => a.slot);
-  const available = state.slots.filter(s => !booked.includes(s));
+  const db = await getDb();
+  const rows = await db.all('SELECT slot FROM appointments WHERE date = ?', date);
+  const booked = rows.map(r => r.slot);
+  const available = SLOTS.filter(s => !booked.includes(s));
   res.json({ date, slots: available });
 });
 
 // List appointments
-app.get('/api/appointments', (req, res) => {
-  res.json(state.appointments);
+app.get('/api/appointments', async (req, res) => {
+  const db = await getDb();
+  const rows = await db.all('SELECT * FROM appointments ORDER BY date, slot');
+  res.json(rows);
 });
 
 // Create appointment + email notifications
@@ -39,11 +38,12 @@ app.post('/api/appointments', async (req, res) => {
     if (!name || !contact || !date || !slot) {
       return res.status(400).json({ error: 'name, contact, date, slot are required' });
     }
-    const clash = state.appointments.some(a => a.date === date && a.slot === slot);
-    if (clash) return res.status(409).json({ error: 'Slot already booked' });
+  const db = await getDb();
+  const existing = await db.get('SELECT 1 FROM appointments WHERE date = ? AND slot = ? LIMIT 1', date, slot);
+  if (existing) return res.status(409).json({ error: 'Slot already booked' });
 
-    const appt = { id: uuidv4(), name, contact, date, slot, email: email || '' };
-    state.appointments.push(appt);
+  const appt = { id: uuidv4(), name, contact, date, slot, email: email || '' };
+  await db.run('INSERT INTO appointments (id,name,contact,email,date,slot) VALUES (?,?,?,?,?,?)', appt.id, appt.name, appt.contact, appt.email, appt.date, appt.slot);
 
     // Fire-and-forget email notifications (do not block success on failure)
     try {
@@ -93,12 +93,12 @@ app.post('/api/appointments', async (req, res) => {
 });
 
 // Delete appointment
-app.delete('/api/appointments/:id', (req, res) => {
-  const { id } = req.params;
-  const idx = state.appointments.findIndex(a => a.id === id);
-  if (idx === -1) return res.status(404).json({ error: 'Not found' });
-  const [removed] = state.appointments.splice(idx, 1);
-  res.json(removed);
+app.delete('/api/appointments/:id', async (req, res) => {
+  const db = await getDb();
+  const appt = await db.get('SELECT * FROM appointments WHERE id = ?', req.params.id);
+  if (!appt) return res.status(404).json({ error: 'Not found' });
+  await db.run('DELETE FROM appointments WHERE id = ?', req.params.id);
+  res.json(appt);
 });
 
 // Contact form email endpoint
@@ -156,4 +156,133 @@ function getTransporter() {
   return nodemailer.createTransport({ jsonTransport: true });
 }
 
-app.listen(PORT, () => console.log(`API running on http://localhost:${PORT}`));
+// -------- Auth (very simple token) --------
+function getAuthToken(req) {
+  const h = req.headers['authorization'] || '';
+  if (!h.startsWith('Bearer ')) return null;
+  return h.slice(7);
+}
+
+async function requireAuth(req, res, next) {
+  const token = getAuthToken(req);
+  if (!token) return res.status(401).json({ error: 'Unauthorized' });
+  const db = await getDb();
+  const row = await db.get('SELECT token FROM sessions WHERE token = ?', token);
+  if (!row) return res.status(401).json({ error: 'Unauthorized' });
+  next();
+}
+
+app.post('/api/auth/login', async (req, res) => {
+  const { username, password } = req.body || {};
+  const u = process.env.ADMIN_USER || 'admin';
+  const p = process.env.ADMIN_PASS || 'password';
+  if (username !== u || password !== p) return res.status(401).json({ error: 'Invalid credentials' });
+  const token = uuidv4();
+  const db = await getDb();
+  await db.run('INSERT INTO sessions (token, created_at) VALUES (?, ?)', token, new Date().toISOString());
+  res.json({ token });
+});
+
+app.post('/api/auth/logout', async (req, res) => {
+  const token = getAuthToken(req);
+  if (token) {
+    const db = await getDb();
+    await db.run('DELETE FROM sessions WHERE token = ?', token);
+  }
+  res.json({ ok: true });
+});
+
+app.get('/api/auth/me', async (req, res) => {
+  const token = getAuthToken(req);
+  if (!token) return res.status(401).json({ error: 'Unauthorized' });
+  const db = await getDb();
+  const row = await db.get('SELECT token FROM sessions WHERE token = ?', token);
+  if (row) return res.json({ ok: true });
+  res.status(401).json({ error: 'Unauthorized' });
+});
+
+// Patients CRUD
+app.get('/api/patients', requireAuth, async (req, res) => {
+  const db = await getDb();
+  const rows = await db.all('SELECT * FROM patients ORDER BY name');
+  res.json(rows);
+});
+
+app.post('/api/patients', requireAuth, async (req, res) => {
+  const { name, contact, email, notes } = req.body || {};
+  if (!name || !contact) return res.status(400).json({ error: 'name and contact are required' });
+  const p = { id: uuidv4(), name, contact, email: email || '', notes: notes || '' };
+  const db = await getDb();
+  await db.run('INSERT INTO patients (id,name,contact,email,notes) VALUES (?,?,?,?,?)', p.id, p.name, p.contact, p.email, p.notes);
+  res.status(201).json(p);
+});
+
+app.get('/api/patients/:id', requireAuth, async (req, res) => {
+  const db = await getDb();
+  const p = await db.get('SELECT * FROM patients WHERE id = ?', req.params.id);
+  if (!p) return res.status(404).json({ error: 'Not found' });
+  res.json(p);
+});
+
+app.put('/api/patients/:id', requireAuth, async (req, res) => {
+  const { name, contact, email, notes } = req.body || {};
+  const db = await getDb();
+  const p = await db.get('SELECT * FROM patients WHERE id = ?', req.params.id);
+  if (!p) return res.status(404).json({ error: 'Not found' });
+  await db.run('UPDATE patients SET name = COALESCE(?, name), contact = COALESCE(?, contact), email = COALESCE(?, email), notes = COALESCE(?, notes) WHERE id = ?', name, contact, email, notes, req.params.id);
+  const updated = await db.get('SELECT * FROM patients WHERE id = ?', req.params.id);
+  res.json(updated);
+});
+
+app.delete('/api/patients/:id', requireAuth, async (req, res) => {
+  const db = await getDb();
+  const p = await db.get('SELECT * FROM patients WHERE id = ?', req.params.id);
+  if (!p) return res.status(404).json({ error: 'Not found' });
+  await db.run('DELETE FROM patients WHERE id = ?', req.params.id);
+  res.json(p);
+});
+
+// Prescriptions for a patient
+app.get('/api/patients/:id/prescriptions', requireAuth, async (req, res) => {
+  const db = await getDb();
+  const p = await db.get('SELECT id FROM patients WHERE id = ?', req.params.id);
+  if (!p) return res.status(404).json({ error: 'Not found' });
+  const rows = await db.all('SELECT * FROM prescriptions WHERE patient_id = ? ORDER BY date DESC', req.params.id);
+  res.json(rows);
+});
+
+app.post('/api/patients/:id/prescriptions', requireAuth, async (req, res) => {
+  const { content } = req.body || {};
+  if (!content) return res.status(400).json({ error: 'content is required' });
+  const db = await getDb();
+  const p = await db.get('SELECT id FROM patients WHERE id = ?', req.params.id);
+  if (!p) return res.status(404).json({ error: 'Not found' });
+  const pres = { id: uuidv4(), patient_id: req.params.id, date: new Date().toISOString(), content };
+  await db.run('INSERT INTO prescriptions (id, patient_id, date, content) VALUES (?,?,?,?)', pres.id, pres.patient_id, pres.date, pres.content);
+  res.status(201).json(pres);
+});
+
+// Admin: Add a blog (write markdown file)
+const fs = require('fs');
+const path = require('path');
+app.post('/api/admin/blog', requireAuth, (req, res) => {
+  const { slug, title, cover, content } = req.body || {};
+  if (!slug || !title || !content) return res.status(400).json({ error: 'slug, title, content required' });
+  if (!/^[-a-z0-9]+$/.test(slug)) return res.status(400).json({ error: 'slug must be lowercase letters, numbers, and hyphens' });
+  const filePath = path.join(process.cwd(), 'public', 'blog', `${slug}.md`);
+  const fm = `---\ntitle: ${title}\ncover: ${cover || '/images/abstract/a1.svg'}\n---\n\n`;
+  try {
+    fs.writeFileSync(filePath, fm + content, 'utf8');
+    res.status(201).json({ ok: true, path: `/blog/${slug}.md` });
+  } catch (e) {
+    console.error('Failed to write blog', e);
+    res.status(500).json({ error: 'Failed to write blog file' });
+  }
+});
+
+init().then(() => {
+  app.listen(PORT, () => console.log(`API running on http://localhost:${PORT}`));
+}).catch((e) => {
+  console.error('Failed to init DB', e);
+  process.exit(1);
+});
