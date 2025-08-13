@@ -54,8 +54,10 @@ export default function Appointment() {
       const data = await res.json();
       setOtpToken(data.token || '');
       setSnackbar({ open: true, message: 'Mobile verified.', severity: 'success' });
+      return true;
     } catch {
       setSnackbar({ open: true, message: 'Invalid OTP. Please try again.', severity: 'error' });
+      return false;
     } finally {
       setOtpBusy(false);
     }
@@ -159,7 +161,7 @@ export default function Appointment() {
         </DialogContent>
         <DialogActions>
           <Button onClick={requestOtp} disabled={otpBusy}>{otpSent ? 'Resend' : 'Send OTP'}</Button>
-          <Button onClick={async ()=> { await verifyOtp(); if (otpToken) { await createAppointment(); } }} variant="contained" disabled={otpBusy || !otpCode}>Verify & Book</Button>
+          <Button onClick={async ()=> { const ok = await verifyOtp(); if (ok) { await createAppointment(); } }} variant="contained" disabled={otpBusy || !otpCode}>Verify & Book</Button>
         </DialogActions>
       </Dialog>
 
