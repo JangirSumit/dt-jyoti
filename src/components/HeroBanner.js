@@ -8,10 +8,11 @@ export default function HeroBanner({ title, subtitle, ctaText, ctaTo, imageSrc }
       position: 'relative',
       overflow: 'hidden',
       borderRadius: 3,
-      p: { xs: 3, md: 6 },
-      mb: 4,
+  p: { xs: 3, md: 6 },
+  mb: { xs: 6, md: 8 },
       color: 'text.primary',
-      background: 'linear-gradient(120deg,#eef7f5,#f2f7fb)'
+  background: 'linear-gradient(120deg,#e7f5ef,#e9f0fb)',
+  boxShadow: '0 8px 28px rgba(0,0,0,0.06)'
     }}>
       {/* Decorative waves */}
       <Box aria-hidden sx={{

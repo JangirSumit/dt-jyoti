@@ -1,5 +1,5 @@
-import React from 'react';
-import { Box, Typography, Paper, Grid, Card, CardContent, CardMedia, Divider } from '@mui/material';
+import React, { useEffect, useRef } from 'react';
+import { Box, Typography, Paper, Grid, Card, CardContent, CardMedia, Divider, Chip, Stack } from '@mui/material';
 import VerifiedIcon from '@mui/icons-material/Verified';
 import FavoriteIcon from '@mui/icons-material/Favorite';
 import AccessTimeIcon from '@mui/icons-material/AccessTime';
@@ -12,10 +12,25 @@ import SEO from '../components/SEO';
 
 export default function Home() {
   useDocumentTitle('Home');
+  const revealRef = useRef([]);
+  useEffect(() => {
+    const els = revealRef.current.filter(Boolean);
+    if (!els.length) return;
+    const io = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((e) => {
+          if (e.isIntersecting) e.target.classList.add('reveal-in');
+        });
+      },
+      { threshold: 0.2 }
+    );
+    els.forEach((el) => io.observe(el));
+    return () => io.disconnect();
+  }, []);
   return (
     <Box>
   <SEO title="Dietitian Jyoti – Personalized Nutrition & Online Appointments" description="Clinical-grade diet plans, AI-assisted daily planning, and easy online appointments. Dietitian-led, practical nutrition." canonical="/" image="/images/banner-home.svg" />
-      <HeroBanner
+  <HeroBanner
         title="Dietitian-led nutrition for real life"
         subtitle="Personalized plans, a smart calculator, and easy online bookings—built around your goals and routine."
         ctaText="Get AI Plan"
@@ -23,9 +38,59 @@ export default function Home() {
         imageSrc="/images/ai/hero-diet.svg"
       />
 
-  <Grid container spacing={{ xs: 2, md: 3 }}>
-        <Grid item xs={12} md={4}>
-          <Card elevation={2} sx={{ borderRadius: 3, height: '100%', transition: 'all .2s ease', '&:hover': { transform: 'translateY(-4px)', boxShadow: 4 } }}>
+      {/* AI spotlight banner */}
+    <Paper
+        className="reveal"
+        ref={(el) => (revealRef.current[0] = el)}
+        sx={{
+      mt: { xs: 4, md: 6 },
+          p: { xs: 2.5, md: 4 },
+          borderRadius: 4,
+          overflow: 'hidden',
+          position: 'relative',
+          background: 'linear-gradient(135deg, #e8f5e9 0%, #e3f2fd 100%)',
+        }}
+      >
+        <Box sx={{ position: 'absolute', inset: 0, pointerEvents: 'none' }}>
+          <Box className="float-y-1" sx={{ position: 'absolute', top: -18, left: -18, width: 120, height: 120, borderRadius: '50%', filter: 'blur(24px)', background: 'radial-gradient(circle, rgba(76,175,80,.25), transparent 60%)' }} />
+          <Box className="float-y-2" sx={{ position: 'absolute', bottom: -24, right: -24, width: 140, height: 140, borderRadius: '50%', filter: 'blur(26px)', background: 'radial-gradient(circle, rgba(33,150,243,.22), transparent 60%)' }} />
+        </Box>
+        <Grid container spacing={{ xs: 2, md: 3 }} alignItems="center">
+          <Grid item xs={12} md={7}>
+            <Stack direction="row" spacing={1} alignItems="center" sx={{ mb: 1 }}>
+              <Chip label="AI" color="success" size="small" className="ai-badge-glow" />
+              <Typography variant="overline" color="text.secondary">Dietitian-verified</Typography>
+            </Stack>
+            <Typography variant="h4" sx={{ fontWeight: 800, lineHeight: 1.15 }} gutterBottom>
+              AI-powered, dietitian-designed daily plans
+            </Typography>
+            <Typography color="text.secondary" sx={{ mb: 2 }}>
+              Get instant, sensible meal plans with calories and macros. Tailored to your stats, preferences, and goals—always grounded in nutrition best practices.
+            </Typography>
+            <Stack direction={{ xs: 'column', sm: 'row' }} spacing={1.5}>
+              <Button component={RouterLink} to="/ai-plans" variant="contained" size="large" className="btn-shimmer">
+                Create my AI plan
+              </Button>
+              <Button component={RouterLink} to="/calculator" color="secondary" variant="outlined" size="large">
+                Try BMI/BMR calculator
+              </Button>
+            </Stack>
+          </Grid>
+          <Grid item xs={12} md={5}>
+            <Box sx={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: 1.5 }}>
+              {["High-protein", "Low-GI", "Diabetes", "PCOD", "Thyroid", "Heart"].map((t, i) => (
+                <Paper key={t} elevation={0} sx={{ p: 1, borderRadius: 2, border: '1px solid rgba(0,0,0,0.06)', bgcolor: 'background.paper', transition: 'transform .2s ease', '&:hover': { transform: 'translateY(-3px)' } }}>
+                  <Typography variant="body2" sx={{ fontWeight: 600 }}>{t}</Typography>
+                </Paper>
+              ))}
+            </Box>
+          </Grid>
+        </Grid>
+      </Paper>
+
+  <Grid container spacing={{ xs: 2, md: 3 }} sx={{ mt: { xs: 2, md: 3 } }}>
+        <Grid item xs={12} md={4} className="reveal" ref={(el) => (revealRef.current[1] = el)}>
+          <Card elevation={2} sx={{ borderRadius: 3, height: '100%', transition: 'all .25s ease', '&:hover': { transform: 'translateY(-6px)', boxShadow: 6 } }}>
             <CardMedia component="img" height="160" image="/images/fruits/bowl.svg" alt="Healthy bowl" sx={{ objectFit: 'cover' }} />
             <CardContent>
               <Typography variant="h6">Clinical-grade nutrition plans</Typography>
@@ -33,8 +98,8 @@ export default function Home() {
             </CardContent>
           </Card>
         </Grid>
-        <Grid item xs={12} md={4}>
-          <Card elevation={2} sx={{ borderRadius: 3, height: '100%', transition: 'all .2s ease', '&:hover': { transform: 'translateY(-4px)', boxShadow: 4 } }}>
+        <Grid item xs={12} md={4} className="reveal" ref={(el) => (revealRef.current[2] = el)}>
+          <Card elevation={2} sx={{ borderRadius: 3, height: '100%', transition: 'all .25s ease', '&:hover': { transform: 'translateY(-6px)', boxShadow: 6 } }}>
             <CardMedia component="img" height="160" image="/images/humans/client2.svg" alt="Happy clients" sx={{ objectFit: 'cover' }} />
             <CardContent>
               <Typography variant="h6">Seamless online scheduling</Typography>
@@ -42,8 +107,8 @@ export default function Home() {
             </CardContent>
           </Card>
         </Grid>
-        <Grid item xs={12} md={4}>
-          <Card elevation={2} sx={{ borderRadius: 3, height: '100%', transition: 'all .2s ease', '&:hover': { transform: 'translateY(-4px)', boxShadow: 4 } }}>
+        <Grid item xs={12} md={4} className="reveal" ref={(el) => (revealRef.current[3] = el)}>
+          <Card elevation={2} sx={{ borderRadius: 3, height: '100%', transition: 'all .25s ease', '&:hover': { transform: 'translateY(-6px)', boxShadow: 6 } }}>
             <CardMedia component="img" height="160" image="/images/ai/cards.svg" alt="AI" sx={{ objectFit: 'cover' }} />
             <CardContent>
               <Typography variant="h6">AI-assisted daily planning</Typography>
@@ -54,7 +119,7 @@ export default function Home() {
       </Grid>
 
       {/* Why choose Dt. Jyoti */}
-  <Paper sx={{ p: { xs: 2, md: 3 }, borderRadius: 3, mt: 5 }}>
+  <Paper className="reveal" ref={(el) => (revealRef.current[4] = el)} sx={{ p: { xs: 2, md: 3 }, borderRadius: 3, mt: { xs: 6, md: 8 } }}>
         <Typography variant="h5" gutterBottom>Why choose Dt. Jyoti</Typography>
   <Grid container spacing={{ xs: 1.5, md: 2 }}>
           <Grid item xs={12} md={4}>
@@ -85,7 +150,7 @@ export default function Home() {
             </Box>
           </Grid>
         </Grid>
-        <Divider sx={{ my: 2 }} />
+    <Divider sx={{ my: 2 }} />
   <Grid container spacing={{ xs: 1.5, md: 2 }}>
           {[
             { n: '1,000+', l: 'Clients served' },
@@ -103,7 +168,7 @@ export default function Home() {
       </Paper>
 
       {/* AI Promo strip */}
-      <Paper sx={{ p: { xs: 2, md: 3 }, borderRadius: 3, mt: 4, background: 'linear-gradient(90deg, #e8f5e9, #e3f2fd)' }}>
+  <Paper className="reveal" ref={(el) => (revealRef.current[5] = el)} sx={{ p: { xs: 2, md: 3 }, borderRadius: 3, mt: { xs: 6, md: 8 }, background: 'linear-gradient(90deg, #e8f5e9, #e3f2fd)' }}>
         <Grid container alignItems="center" spacing={{ xs: 1.5, md: 2 }}>
           <Grid item xs={12} md={8}>
             <Typography variant="h5" sx={{ fontWeight: 700 }} gutterBottom>AI-powered. Dietitian-designed.</Typography>
@@ -118,7 +183,7 @@ export default function Home() {
       </Paper>
 
       {/* Testimonials */}
-      <Box sx={{ mt: 5 }}>
+  <Box className="reveal" ref={(el) => (revealRef.current[6] = el)} sx={{ mt: { xs: 6, md: 8 } }}>
         <Typography variant="h5" gutterBottom>What clients say</Typography>
   <Grid container spacing={{ xs: 2, md: 2 }}>
           {[

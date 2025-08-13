@@ -36,27 +36,28 @@ export default function AdminLayout() {
   return (
     <Box sx={{ display: 'flex' }}>
       <AppBar position="fixed" sx={{ zIndex: 1201 }}>
-        <Toolbar sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-          <Box sx={{ display: 'flex', alignItems: 'center' }}>
-            <IconButton
-              color="inherit"
-              edge="start"
-              onClick={toggleMobile}
-              sx={{ ml: -1, mr: 1, display: { xs: 'inline-flex', md: 'none' } }}
-              aria-label="open navigation"
-            >
-              <MenuIcon />
-            </IconButton>
-            <Box
-              component={RouterLink}
-              to="/"
-              sx={{ display: 'flex', alignItems: 'center', textDecoration: 'none', color: 'inherit', mr: 1 }}
-            >
-              <Box component="img" src="/logo64.png" alt="logo" sx={{ width: 32, height: 32, mr: 1, borderRadius: '8px' }} />
+        <Toolbar disableGutters>
+          <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', width: '100%', px: { xs: 1, md: 2 } }}>
+            <Box sx={{ display: 'flex', alignItems: 'center' }}>
+              <IconButton
+                color="inherit"
+                edge="start"
+                onClick={toggleMobile}
+                sx={{ mr: 1, display: { xs: 'inline-flex', md: 'none' } }}
+                aria-label="open navigation"
+              >
+                <MenuIcon />
+              </IconButton>
+              <Box
+                component={RouterLink}
+                to="/"
+                sx={{ display: 'flex', alignItems: 'center', textDecoration: 'none', color: 'inherit', mr: 1 }}
+              >
+                <Box component="img" src="/logo64.png" alt="logo" sx={{ width: 32, height: 32, mr: 1, borderRadius: '8px' }} />
+              </Box>
+              <Typography variant="h6" noWrap component="div">Admin</Typography>
             </Box>
-            <Typography variant="h6" noWrap component="div">Admin</Typography>
-          </Box>
-          <Box>
+            <Box>
             <Button
               color="inherit"
               onClick={logout}
@@ -75,6 +76,7 @@ export default function AdminLayout() {
                 <LogoutIcon />
               </IconButton>
             </Tooltip>
+            </Box>
           </Box>
         </Toolbar>
       </AppBar>

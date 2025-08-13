@@ -14,7 +14,7 @@ let theme = createTheme({
     mode: 'light',
     primary: { main: '#2e7d32' },
     secondary: { main: '#00838f' },
-    background: { default: '#f7f9fb', paper: '#ffffff' },
+  background: { default: '#f3f6f9', paper: '#ffffff' },
     text: { primary: '#1f2937', secondary: '#6b7280' }
   },
   shape: { borderRadius: 12 },

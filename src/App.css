@@ -1,6 +1,6 @@
 body {
   scroll-behavior: smooth;
-  background-color: #ea9a96;
+  background-color: #f3f6f9; /* aligns with theme background.default for contrast */
   color: #303960;
 }
 
@@ -52,6 +52,17 @@ button {
   height: 35px;
 }
 
+/* Fix: prevent global form control sizing from affecting AppBars/Toolbars */
+.MuiAppBar-root button,
+.MuiAppBar-root .MuiButtonBase-root,
+.MuiAppBar-root .MuiIconButton-root,
+.MuiToolbar-root button,
+.MuiToolbar-root .MuiButtonBase-root,
+.MuiToolbar-root .MuiIconButton-root {
+  width: auto;
+  height: auto;
+}
+
 textarea {
   width: 98%;
   height: 80vh;
@@ -94,3 +105,32 @@ pre code {
   background-color: transparent;
   border-radius: 0;
 }
+
+/* Subtle animations for Home page */
+.reveal { opacity: 0; transform: translateY(16px); transition: opacity .6s ease, transform .6s ease; }
+.reveal-in { opacity: 1; transform: translateY(0); }
+
+@keyframes floatY1 { 0% { transform: translateY(0); } 50% { transform: translateY(-6px); } 100% { transform: translateY(0); } }
+@keyframes floatY2 { 0% { transform: translateY(0); } 50% { transform: translateY(8px); } 100% { transform: translateY(0); } }
+.float-y-1 { animation: floatY1 6s ease-in-out infinite; }
+.float-y-2 { animation: floatY2 7s ease-in-out infinite; }
+
+/* Button shimmer for AI CTA */
+.btn-shimmer {
+  position: relative;
+  overflow: hidden;
+}
+.btn-shimmer::after {
+  content: '';
+  position: absolute;
+  top: 0; left: -150%;
+  width: 120%; height: 100%;
+  background: linear-gradient(110deg, transparent 30%, rgba(255,255,255,0.35) 50%, transparent 70%);
+  transform: skewX(-20deg);
+  animation: shimmer 2.25s ease-in-out infinite;
+}
+@keyframes shimmer { 0% { left: -150%; } 60% { left: 120%; } 100% { left: 120%; } }
+
+/* AI badge glow */
+.ai-badge-glow { box-shadow: 0 0 0 0 rgba(76,175,80,0.6); animation: pulseGlow 2.5s infinite; }
+@keyframes pulseGlow { 0% { box-shadow: 0 0 0 0 rgba(76,175,80,0.5);} 70% { box-shadow: 0 0 0 8px rgba(76,175,80,0);} 100% { box-shadow: 0 0 0 0 rgba(76,175,80,0);} }
