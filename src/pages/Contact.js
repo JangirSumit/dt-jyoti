@@ -43,9 +43,9 @@ export default function Contact() {
         <Grid item xs={12} md={6}>
           <form onSubmit={submit}>
             <Grid container spacing={2}>
-              <Grid item xs={12} sm={6}><TextField label="Name" name="name" value={form.name} onChange={onChange} fullWidth required /></Grid>
-              <Grid item xs={12} sm={6}><TextField label="Email" name="email" type="email" value={form.email} onChange={onChange} fullWidth required /></Grid>
-              <Grid item xs={12}><TextField label="Message" name="message" value={form.message} onChange={onChange} fullWidth multiline rows={4} required /></Grid>
+              <Grid item xs={12} sm={6}><TextField id="contact-name" label="Name" name="name" value={form.name} onChange={onChange} fullWidth required /></Grid>
+              <Grid item xs={12} sm={6}><TextField id="contact-email" label="Email" name="email" type="email" value={form.email} onChange={onChange} fullWidth required /></Grid>
+              <Grid item xs={12}><TextField id="contact-message" label="Message" name="message" value={form.message} onChange={onChange} fullWidth multiline rows={4} required /></Grid>
               <Grid item xs={12}><Button type="submit" variant="contained" disabled={submitting}>{submitting ? 'Sending…' : 'Send'}</Button></Grid>
             </Grid>
           </form>

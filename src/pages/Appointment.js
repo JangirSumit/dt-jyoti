@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { Paper, Typography, Grid, TextField, Select, MenuItem, Button, Snackbar, Alert, Box, Dialog, DialogTitle, DialogContent, DialogActions } from '@mui/material';
+import { Paper, Typography, Grid, TextField, Select, MenuItem, Button, Snackbar, Alert, Box, Dialog, DialogTitle, DialogContent, DialogActions, FormControl, InputLabel } from '@mui/material';
 import Banner from '../components/Banner';
 import useDocumentTitle from '../hooks/useDocumentTitle';
 import SEO from '../components/SEO';
@@ -138,17 +138,28 @@ export default function Appointment() {
   <Grid container spacing={{ xs: 2, md: 2 }}>
           <Grid item xs={12} md={7}>
             <Grid container spacing={2}>
-          <Grid item xs={12} sm={6}><TextField label="Name" name="name" value={booking.name} onChange={onChange} fullWidth required /></Grid>
+          <Grid item xs={12} sm={6}><TextField id="name" label="Name" name="name" value={booking.name} onChange={onChange} fullWidth required /></Grid>
           <Grid item xs={12} sm={6}>
-            <TextField label="Contact" name="contact" value={booking.contact} onChange={onChange} fullWidth required />
+            <TextField id="contact" label="Contact" name="contact" value={booking.contact} onChange={onChange} fullWidth required />
           </Grid>
-          <Grid item xs={12} sm={6}><TextField label="Email (for confirmation)" name="email" type="email" value={booking.email} onChange={onChange} fullWidth /></Grid>
-          <Grid item xs={12} sm={6}><TextField type="date" label="Date" name="date" value={booking.date} onChange={onChange} fullWidth required InputLabelProps={{ shrink: true }} /></Grid>
+          <Grid item xs={12} sm={6}><TextField id="email" label="Email (for confirmation)" name="email" type="email" value={booking.email} onChange={onChange} fullWidth /></Grid>
+          <Grid item xs={12} sm={6}><TextField id="date" type="date" label="Date" name="date" value={booking.date} onChange={onChange} fullWidth required InputLabelProps={{ shrink: true }} /></Grid>
           <Grid item xs={12} sm={6}>
-            <Select name="slot" value={booking.slot} onChange={onChange} fullWidth displayEmpty required>
-              <MenuItem value=""><em>Select Slot</em></MenuItem>
-              {booking.date && slotsForDate.map((s) => <MenuItem key={s} value={s}>{s}</MenuItem>)}
-            </Select>
+            <FormControl fullWidth required>
+              <InputLabel id="slot-label">Slot</InputLabel>
+              <Select
+                labelId="slot-label"
+                id="slot"
+                name="slot"
+                value={booking.slot}
+                onChange={onChange}
+                label="Slot"
+                displayEmpty
+              >
+                <MenuItem value=""><em>Select Slot</em></MenuItem>
+                {booking.date && slotsForDate.map((s) => <MenuItem key={s} value={s}>{s}</MenuItem>)}
+              </Select>
+            </FormControl>
           </Grid>
           <Grid item xs={12}><Button type="submit" variant="contained">Book</Button></Grid>
             </Grid>
@@ -167,6 +178,7 @@ export default function Appointment() {
             We sent a 6‑digit code to {booking.contact}. Enter it below to confirm your booking.
           </Typography>
           <TextField
+            id="otp"
             autoFocus
             label="OTP"
             value={otpCode}

@@ -26,10 +26,10 @@ export default function AdminPatients() {
     <Paper sx={{ p: { xs: 1.5, md: 2 }, mb: 2 }}>
         <form onSubmit={add}>
       <Grid container spacing={1.5}>
-            <Grid item xs={12} md={3}><TextField label="Name" name="name" value={form.name} onChange={onChange} fullWidth required /></Grid>
-            <Grid item xs={12} md={3}><TextField label="Contact" name="contact" value={form.contact} onChange={onChange} fullWidth required /></Grid>
-            <Grid item xs={12} md={3}><TextField label="Email" name="email" type="email" value={form.email} onChange={onChange} fullWidth /></Grid>
-            <Grid item xs={12} md={3}><TextField label="Notes" name="notes" value={form.notes} onChange={onChange} fullWidth /></Grid>
+            <Grid item xs={12} md={3}><TextField id="ap-name" label="Name" name="name" value={form.name} onChange={onChange} fullWidth required /></Grid>
+            <Grid item xs={12} md={3}><TextField id="ap-contact" label="Contact" name="contact" value={form.contact} onChange={onChange} fullWidth required /></Grid>
+            <Grid item xs={12} md={3}><TextField id="ap-email" label="Email" name="email" type="email" value={form.email} onChange={onChange} fullWidth /></Grid>
+            <Grid item xs={12} md={3}><TextField id="ap-notes" label="Notes" name="notes" value={form.notes} onChange={onChange} fullWidth /></Grid>
             <Grid item xs={12}><Button type="submit" variant="contained" size="small">Add Patient</Button></Grid>
           </Grid>
         </form>

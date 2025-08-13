@@ -57,18 +57,18 @@ export default function Calculator() {
   <Paper sx={{ p: 3 }}>
       <Typography variant="h4" gutterBottom>BMI / BMR Calculator</Typography>
       <Grid container spacing={2}>
-        <Grid item xs={12} sm={4}><TextField select label="Sex" name="sex" value={form.sex} onChange={onChange} fullWidth>
+  <Grid item xs={12} sm={4}><TextField id="calc-sex" select label="Sex" name="sex" value={form.sex} onChange={onChange} fullWidth>
           <MenuItem value="female">Female</MenuItem><MenuItem value="male">Male</MenuItem></TextField></Grid>
-        <Grid item xs={12} sm={4}><TextField label="Age" name="age" value={form.age} onChange={onChange} type="number" fullWidth /></Grid>
-        <Grid item xs={12} sm={4}><TextField label="Height (cm)" name="heightCm" value={form.heightCm} onChange={onChange} type="number" fullWidth /></Grid>
-        <Grid item xs={12} sm={4}><TextField label="Weight (kg)" name="weightKg" value={form.weightKg} onChange={onChange} type="number" fullWidth /></Grid>
-        <Grid item xs={12} sm={4}><TextField select label="Activity" name="activity" value={form.activity} onChange={onChange} fullWidth>
+  <Grid item xs={12} sm={4}><TextField id="calc-age" label="Age" name="age" value={form.age} onChange={onChange} type="number" fullWidth /></Grid>
+  <Grid item xs={12} sm={4}><TextField id="calc-height" label="Height (cm)" name="heightCm" value={form.heightCm} onChange={onChange} type="number" fullWidth /></Grid>
+  <Grid item xs={12} sm={4}><TextField id="calc-weight" label="Weight (kg)" name="weightKg" value={form.weightKg} onChange={onChange} type="number" fullWidth /></Grid>
+  <Grid item xs={12} sm={4}><TextField id="calc-activity" select label="Activity" name="activity" value={form.activity} onChange={onChange} fullWidth>
           <MenuItem value="sedentary">Sedentary</MenuItem>
           <MenuItem value="light">Light</MenuItem>
           <MenuItem value="moderate">Moderate</MenuItem>
           <MenuItem value="active">Active</MenuItem>
         </TextField></Grid>
-        <Grid item xs={12} sm={4}><TextField select label="Goal" name="goal" value={form.goal} onChange={onChange} fullWidth>
+  <Grid item xs={12} sm={4}><TextField id="calc-goal" select label="Goal" name="goal" value={form.goal} onChange={onChange} fullWidth>
           <MenuItem value="loss">Lose Weight</MenuItem>
           <MenuItem value="maintain">Maintain</MenuItem>
           <MenuItem value="gain">Gain Muscle</MenuItem>
