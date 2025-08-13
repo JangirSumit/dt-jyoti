@@ -7,6 +7,9 @@ beforeEach(() => {
   window.fetch.mockReset();
   localStorage.clear();
   localStorage.setItem('admintoken', 'adm');
+  // silence jsdom alert not implemented
+  // eslint-disable-next-line no-alert
+  window.alert = jest.fn();
 });
 
 afterEach(() => {

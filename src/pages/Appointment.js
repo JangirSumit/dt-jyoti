@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { Paper, Typography, Grid, TextField, Select, MenuItem, Button, Snackbar, Alert, Box, Dialog, DialogTitle, DialogContent, DialogActions } from '@mui/material';
 import Banner from '../components/Banner';
 import useDocumentTitle from '../hooks/useDocumentTitle';
@@ -7,7 +7,14 @@ import Section from '../components/Section';
 
 export default function Appointment() {
   useDocumentTitle('Appointment');
-  const [booking, setBooking] = useState({ name: '', contact: '', email: '', date: '', slot: '' });
+  const getToday = () => {
+    const now = new Date();
+    const tzOffset = now.getTimezoneOffset() * 60000;
+    return new Date(now.getTime() - tzOffset).toISOString().slice(0, 10);
+  };
+  const [booking, setBooking] = useState({ name: '', contact: '', email: '', date: (() => {
+    try { return getToday(); } catch { return ''; }
+  })(), slot: '' });
   const [slotsForDate, setSlotsForDate] = useState([]);
   const [snackbar, setSnackbar] = useState({ open: false, message: '', severity: 'success' });
   const [otpSent, setOtpSent] = useState(false);
@@ -21,6 +28,14 @@ export default function Appointment() {
     const data = await res.json();
     setSlotsForDate(Array.isArray(data.slots) ? data.slots : []);
   };
+
+  // Fetch slots for default date on mount
+  useEffect(() => {
+    if (booking.date) {
+      fetchSlots(booking.date);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   // No public upcoming list to protect privacy
 
@@ -68,8 +83,9 @@ export default function Appointment() {
     if (res.status === 409) { setSnackbar({ open: true, message: 'Slot already booked.', severity: 'error' }); return false; }
     if (!res.ok) { setSnackbar({ open: true, message: 'Booking failed.', severity: 'error' }); return false; }
     await res.json();
-    setBooking({ name: '', contact: '', email: '', date: '', slot: '' });
-    setSlotsForDate([]);
+  const today = getToday();
+  setBooking({ name: '', contact: '', email: '', date: today, slot: '' });
+  await fetchSlots(today);
     setOtpSent(false); setOtpCode(''); setOtpToken(''); setOtpOpen(false);
     setSnackbar({ open: true, message: 'Appointment booked! If you provided an email, a confirmation has been sent.', severity: 'success' });
     return true;
