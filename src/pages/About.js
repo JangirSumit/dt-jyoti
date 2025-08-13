@@ -3,11 +3,13 @@ import { Typography, Paper, Grid, Box, Chip, Divider, List, ListItem, ListItemTe
 import Button from '@mui/material/Button';
 import Banner from '../components/Banner';
 import useDocumentTitle from '../hooks/useDocumentTitle';
+import SEO from '../components/SEO';
 
 export default function About() {
   useDocumentTitle('About');
   return (
     <>
+  <SEO title="About – Dietitian Jyoti" description="Clinical dietitian with 7+ years experience. Personalized, practical, and evidence-based nutrition." canonical="/about" image="/images/banner-about.svg" />
       <Banner src="/images/banner-about.svg" alt="About banner" />
       <Paper sx={{ p: { xs: 2, md: 4 }, borderRadius: 3 }}>
         <Grid container spacing={4}>

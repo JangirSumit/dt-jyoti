@@ -8,11 +8,13 @@ import Button from '@mui/material/Button';
 import { Link as RouterLink } from 'react-router-dom';
 import HeroBanner from '../components/HeroBanner';
 import useDocumentTitle from '../hooks/useDocumentTitle';
+import SEO from '../components/SEO';
 
 export default function Home() {
   useDocumentTitle('Home');
   return (
     <Box>
+  <SEO title="Dietitian Jyoti – Personalized Nutrition & Online Appointments" description="Clinical-grade diet plans, AI-assisted daily planning, and easy online appointments. Dietitian-led, practical nutrition." canonical="/" image="/images/banner-home.svg" />
       <HeroBanner
         title="Dietitian-led nutrition for real life"
         subtitle="Personalized plans, a smart calculator, and easy online bookings—built around your goals and routine."

@@ -3,6 +3,7 @@ import { Paper, Typography, Grid, TextField, MenuItem, Button, Divider, Chip, Bo
 import Banner from '../components/Banner';
 import { generatePlan } from '../utils/aiPlanner';
 import useDocumentTitle from '../hooks/useDocumentTitle';
+import SEO from '../components/SEO';
 
 export default function AIPlans() {
   useDocumentTitle('AI Diet Planner');
@@ -140,6 +141,7 @@ export default function AIPlans() {
 
   return (
     <>
+  <SEO title="AI Diet Plans – Dietitian Jyoti" description="Get instant AI-assisted diet plans with calories, macros, and meal ideas. Dietitian-designed logic." canonical="/ai-plans" image="/images/ai/hero-diet.svg" />
       <Banner src="/images/ai/hero-diet.svg" alt="AI Diet Planner" />
   <Paper sx={{ p: { xs: 2, md: 3 }, borderRadius: 3 }}>
         <Grid container spacing={3}>

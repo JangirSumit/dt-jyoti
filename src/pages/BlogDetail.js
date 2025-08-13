@@ -6,6 +6,7 @@ import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 import Banner from '../components/Banner';
 import useDocumentTitle from '../hooks/useDocumentTitle';
+import SEO from '../components/SEO';
 
 export default function BlogDetail() {
   const { slug } = useParams();
@@ -51,6 +52,14 @@ export default function BlogDetail() {
 
   return (
     <>
+      <SEO
+        title={(title || 'Blog') + ' – Dietitian Jyoti'}
+        description={content ? content.replace(/[#>*_`-]/g, ' ').split(/\s+/).slice(0, 24).join(' ') + '…' : 'Article'}
+        canonical={`/blogs/${slug}`}
+        image={cover || '/images/banner-blogs.svg'}
+        type="article"
+        article={{ title, publishedTime: new Date().toISOString(), author: 'Dietitian Jyoti' }}
+      />
       {cover && <Banner src={cover} alt={title} />}
       <Paper sx={{ p: { xs: 2, md: 3 }, borderRadius: 3 }}>
         <Stack direction="row" spacing={1} alignItems="center" sx={{ mb: 1 }}>

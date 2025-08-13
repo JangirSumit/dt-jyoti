@@ -3,6 +3,7 @@ import { Paper, Typography, Grid, TextField, Select, MenuItem, Button, Snackbar,
 import Banner from '../components/Banner';
 import useDocumentTitle from '../hooks/useDocumentTitle';
 import DeleteIcon from '@mui/icons-material/Delete';
+import SEO from '../components/SEO';
 
 export default function Appointment() {
   useDocumentTitle('Appointment');
@@ -32,7 +33,7 @@ export default function Appointment() {
 
   const submit = async (e) => {
     e.preventDefault();
-  const { name, contact, email, date, slot } = booking;
+  const { name, contact, date, slot } = booking;
   if (!name || !contact || !date || !slot) {
       setSnackbar({ open: true, message: 'Please fill all fields.', severity: 'error' });
       return;
@@ -44,7 +45,7 @@ export default function Appointment() {
   setAppointments((a) => [...a, appt]);
   setBooking({ name: '', contact: '', email: '', date: '', slot: '' });
     setSlotsForDate([]);
-    setSnackbar({ open: true, message: 'Appointment booked!', severity: 'success' });
+  setSnackbar({ open: true, message: 'Appointment booked! If you provided an email, a confirmation has been sent.', severity: 'success' });
   };
 
   const cancel = async (id) => {
@@ -56,6 +57,7 @@ export default function Appointment() {
 
   return (
     <>
+  <SEO title="Book Appointment – Dietitian Jyoti" description="See available slots and book your consultation online in seconds." canonical="/appointment" image="/images/banner-appointment.svg" />
     <Banner src="/images/banner-appointment.svg" alt="Appointment banner" />
   <Paper sx={{ p: { xs: 2, md: 3 }, borderRadius: 3, boxShadow: 2 }}>
       <Typography variant="h4" gutterBottom>Book Appointment</Typography>
