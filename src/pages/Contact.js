@@ -52,7 +52,9 @@ export default function Contact() {
           <Paper variant="outlined" sx={{ p: 2, borderRadius: 2 }}>
             <Typography variant="subtitle1" gutterBottom>Clinic & Online</Typography>
             <Typography color="text.secondary">Gurgaon • Mon–Sat • 10:00 AM – 6:00 PM</Typography>
-            <Box sx={{ mt: 2, height: 180, borderRadius: 2, background: 'linear-gradient(120deg,#eef7f5,#f2f7fb)' }} />
+            <Box sx={{ mt: 2, height: 180, borderRadius: 2, overflow: 'hidden' }}>
+              <Box component="img" src="/images/humans/client3.svg" alt="Clients" sx={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+            </Box>
           </Paper>
         </Grid>
       </Grid>

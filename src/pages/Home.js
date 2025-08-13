@@ -26,7 +26,7 @@ export default function Home() {
   <Grid container spacing={{ xs: 2, md: 3 }}>
         <Grid item xs={12} md={4}>
           <Card elevation={2} sx={{ borderRadius: 3, height: '100%', transition: 'all .2s ease', '&:hover': { transform: 'translateY(-4px)', boxShadow: 4 } }}>
-            <CardMedia component="img" height="160" image="/images/abstract/a1.svg" alt="Plans" sx={{ objectFit: 'cover' }} />
+            <CardMedia component="img" height="160" image="/images/fruits/bowl.svg" alt="Healthy bowl" sx={{ objectFit: 'cover' }} />
             <CardContent>
               <Typography variant="h6">Clinical-grade nutrition plans</Typography>
               <Typography variant="body2" color="text.secondary">Personalized protocols for diabetes, thyroid, PCOD, weight, and life stages.</Typography>
@@ -35,7 +35,7 @@ export default function Home() {
         </Grid>
         <Grid item xs={12} md={4}>
           <Card elevation={2} sx={{ borderRadius: 3, height: '100%', transition: 'all .2s ease', '&:hover': { transform: 'translateY(-4px)', boxShadow: 4 } }}>
-            <CardMedia component="img" height="160" image="/images/abstract/a1.svg" alt="Slots" sx={{ objectFit: 'cover' }} />
+            <CardMedia component="img" height="160" image="/images/humans/client2.svg" alt="Happy clients" sx={{ objectFit: 'cover' }} />
             <CardContent>
               <Typography variant="h6">Seamless online scheduling</Typography>
               <Typography variant="body2" color="text.secondary">See real-time availability and book a consultation in seconds.</Typography>

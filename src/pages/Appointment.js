@@ -79,7 +79,7 @@ export default function Appointment() {
             </Grid>
           </Grid>
           <Grid item xs={12} md={5}>
-            <Box component="img" src="/images/humans/client.svg" alt="Client" sx={{ width: '100%', height: 'auto', borderRadius: 3, display: 'block' }} />
+            <Box component="img" src="/images/fruits/bowl.svg" alt="Healthy bowl" sx={{ width: '100%', height: 'auto', borderRadius: 3, display: 'block' }} />
           </Grid>
         </Grid>
       </form>

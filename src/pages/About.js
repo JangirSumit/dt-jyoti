@@ -19,7 +19,7 @@ export default function About() {
               <Box sx={{ height: 120, background: 'linear-gradient(120deg,#eef7f5,#f2f7fb)' }} />
               <CardContent>
                 <Stack alignItems="center" spacing={2} sx={{ mt: -8 }}>
-                  <Avatar src="/images/humans/avatar.svg" alt="Dt. Jyoti" sx={{ width: 120, height: 120, border: '4px solid #fff' }} />
+                  <Avatar src="/images/humans/dietitian.svg" alt="Dt. Jyoti" sx={{ width: 120, height: 120, border: '4px solid #fff' }} />
                   <Box sx={{ textAlign: 'center' }}>
                     <Typography variant="h6" sx={{ fontWeight: 800 }}>Dt. Jyoti Jangid</Typography>
                     <Typography variant="body2" color="text.secondary">Dietitian & Nutritionist</Typography>
