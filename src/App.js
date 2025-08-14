@@ -1,4 +1,3 @@
-
 import React, { Component } from "react";
 import Container from "@mui/material/Container";
 import Typography from "@mui/material/Typography";
@@ -27,6 +26,7 @@ import AdminPatients from './pages/admin/AdminPatients';
 import AdminBlogNew from './pages/admin/AdminBlogNew';
 import AdminPrescriptions from './pages/admin/AdminPrescriptions';
 import AdminLogin from './pages/admin/Login';
+import ManageCalender from './pages/admin/ManageCalender';
 import "./App.css";
 
 function ProtectedRoute({ children }) {
@@ -225,6 +225,7 @@ export class App extends Component {
               <Route path="patients" element={<AdminPatients />} />
               <Route path="blogs/new" element={<AdminBlogNew />} />
               <Route path="prescriptions" element={<AdminPrescriptions />} />
+              <Route path="calender" element={<ManageCalender />} />
             </Route>
           </Routes>
         </BrowserRouter>
