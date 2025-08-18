@@ -12,6 +12,7 @@ export default function AdminLayout() {
   const [mobileOpen, setMobileOpen] = useState(false);
   const items = [
     { to: '/admin/appointments', label: 'Appointments' },
+    { to: '/admin/calender', label: 'Manage calender' }, // new
     { to: '/admin/patients', label: 'Patients' },
     { to: '/admin/blogs/new', label: 'Add Blog' },
     { to: '/admin/prescriptions', label: 'Prescriptions' },
