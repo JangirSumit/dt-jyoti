@@ -24,9 +24,15 @@ export default function Appointment() {
   const [otpOpen, setOtpOpen] = useState(false);
 
   const fetchSlots = async (date) => {
-    const res = await fetch(`/api/slots?date=${encodeURIComponent(date)}`);
-    const data = await res.json();
-    setSlotsForDate(Array.isArray(data.slots) ? data.slots : []);
+    try {
+      const res = await fetch(`/api/appointments/slots?date=${encodeURIComponent(date)}`);
+      if (!res.ok) throw new Error('Failed to load slots');
+      const data = await res.json();
+      setSlotsForDate(Array.isArray(data.slots) ? data.slots : []);
+    } catch (err) {
+      console.warn('Fetch slots failed', err);
+      setSlotsForDate([]);
+    }
   };
 
   // Fetch slots for default date on mount
