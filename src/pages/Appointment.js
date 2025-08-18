@@ -56,10 +56,13 @@ export default function Appointment() {
     try {
       setOtpBusy(true);
       const res = await fetch('/api/otp/request', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ contact: booking.contact }) });
-      if (!res.ok) throw new Error('failed');
+      if (!res.ok) {
+        const err = await res.json().catch(()=>({}));
+        throw new Error(err.error || 'failed');
+      }
       setOtpSent(true);
       setSnackbar({ open: true, message: 'OTP sent. Please check your phone.', severity: 'success' });
-    } catch {
+    } catch (e) {
       setSnackbar({ open: true, message: 'Failed to send OTP. Try again later.', severity: 'error' });
     } finally {
       setOtpBusy(false);
@@ -67,7 +70,7 @@ export default function Appointment() {
   };
 
   const verifyOtp = async () => {
-    if (!otpCode) { setSnackbar({ open: true, message: 'Enter the OTP code.', severity: 'error' }); return; }
+    if (!otpCode) { setSnackbar({ open: true, message: 'Enter the OTP code.', severity: 'error' }); return ''; }
     try {
       setOtpBusy(true);
       const res = await fetch('/api/otp/verify', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ contact: booking.contact, code: otpCode }) });
@@ -75,23 +78,32 @@ export default function Appointment() {
       const data = await res.json();
       setOtpToken(data.token || '');
       setSnackbar({ open: true, message: 'Mobile verified.', severity: 'success' });
-      return true;
+      return data.token || '';
     } catch {
       setSnackbar({ open: true, message: 'Invalid OTP. Please try again.', severity: 'error' });
-      return false;
+      return '';
     } finally {
       setOtpBusy(false);
     }
   };
 
-  const createAppointment = async () => {
-    const res = await fetch('/api/appointments', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ ...booking, otpToken }) });
+  const createAppointment = async (tokenArg) => {
+    const tokenToUse = tokenArg || otpToken;
+    const res = await fetch('/api/appointments', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'x-otp-token': tokenToUse }, // also send in header
+      body: JSON.stringify({ ...booking, otpToken: tokenToUse })
+    });
     if (res.status === 409) { setSnackbar({ open: true, message: 'Slot already booked.', severity: 'error' }); return false; }
-    if (!res.ok) { setSnackbar({ open: true, message: 'Booking failed.', severity: 'error' }); return false; }
+    if (!res.ok) {
+      const err = await res.json().catch(()=>({}));
+      setSnackbar({ open: true, message: err.error || 'Booking failed.', severity: 'error' });
+      return false;
+    }
     await res.json();
-  const today = getToday();
-  setBooking({ name: '', contact: '', email: '', date: today, slot: '' });
-  await fetchSlots(today);
+    const today = getToday();
+    setBooking({ name: '', contact: '', email: '', date: today, slot: '' });
+    await fetchSlots(today);
     setOtpSent(false); setOtpCode(''); setOtpToken(''); setOtpOpen(false);
     setSnackbar({ open: true, message: 'Appointment booked! If you provided an email, a confirmation has been sent.', severity: 'success' });
     return true;
@@ -99,8 +111,8 @@ export default function Appointment() {
 
   const submit = async (e) => {
     e.preventDefault();
-  const { name, contact, date, slot } = booking;
-  if (!name || !contact || !date || !slot) {
+    const { name, contact, date, slot } = booking;
+    if (!name || !contact || !date || !slot) {
       setSnackbar({ open: true, message: 'Please fill all fields.', severity: 'error' });
       return;
     }
@@ -109,7 +121,7 @@ export default function Appointment() {
       setOtpOpen(true);
       return;
     }
-    await createAppointment();
+    await createAppointment(otpToken);
   };
 
   // —
@@ -195,7 +207,16 @@ export default function Appointment() {
         </DialogContent>
         <DialogActions>
           <Button onClick={requestOtp} disabled={otpBusy}>{otpSent ? 'Resend' : 'Send OTP'}</Button>
-          <Button onClick={async ()=> { const ok = await verifyOtp(); if (ok) { await createAppointment(); } }} variant="contained" disabled={otpBusy || !otpCode}>Verify & Book</Button>
+          <Button
+            onClick={async () => {
+              const token = await verifyOtp();
+              if (token) { await createAppointment(token); }
+            }}
+            variant="contained"
+            disabled={otpBusy || !otpCode}
+          >
+            Verify & Book
+          </Button>
         </DialogActions>
       </Dialog>
 

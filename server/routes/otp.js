@@ -1,44 +1,38 @@
 const { Router } = require('express');
-const { getDb } = require('../db');
 const { v4: uuidv4 } = require('uuid');
+const { getDb } = require('../db');
+const { sendSms, normalizePhone } = require('../utils/sms');
 
 const router = Router();
 
 function nowIso() { return new Date().toISOString(); }
-function plusMinutes(min) { return new Date(Date.now() + min * 60000).toISOString(); }
-
-function normalizeContact(contact) {
-  // Very basic normalization: keep digits and leading +
-  const trimmed = String(contact || '').trim();
-  if (!trimmed) return '';
-  const plus = trimmed.startsWith('+') ? '+' : '';
-  const digits = trimmed.replace(/\D/g, '');
-  return plus + digits;
-}
-
-async function sendOtpSms(contact, code) {
-  // Stub: In production, integrate SMS provider (Twilio/MSG91/etc.). For now, log to server.
-  console.log(`[OTP] Sending code ${code} to ${contact}`);
-  return true;
-}
+function addMinutes(min) { return new Date(Date.now() + min * 60000).toISOString(); }
 
 router.post('/request', async (req, res) => {
   try {
-    const raw = req.body?.contact;
-    const contact = normalizeContact(raw);
-    if (!contact || contact.length < 10) return res.status(400).json({ error: 'valid contact required' });
+    const raw = String((req.body && req.body.contact) || '');
+    const contact = normalizePhone(raw);
+    if (!contact) return res.status(400).json({ error: 'contact required' });
 
     const db = await getDb();
-    // rate limit: allow at most 3 OTPs per 10 minutes per contact
-    const tenMinAgo = new Date(Date.now() - 10 * 60000).toISOString();
-    const recent = await db.all('SELECT * FROM otps WHERE contact = ? AND created_at > ?', contact, tenMinAgo);
-    if (recent.length >= 3) return res.status(429).json({ error: 'Too many requests. Try later.' });
+    const recent = await db.get(
+      `SELECT created_at FROM otps WHERE contact = ? ORDER BY created_at DESC LIMIT 1`,
+      contact
+    );
+    if (recent && Date.now() - new Date(recent.created_at).getTime() < 60 * 1000) {
+      return res.status(429).json({ error: 'Please wait a minute before requesting another OTP.' });
+    }
 
     const code = String(Math.floor(100000 + Math.random() * 900000));
-    const createdAt = nowIso();
-    const expiresAt = plusMinutes(10);
-    await db.run('INSERT INTO otps (contact, code, created_at, expires_at) VALUES (?,?,?,?)', contact, code, createdAt, expiresAt);
-    await sendOtpSms(contact, code);
+    await db.run(
+      `INSERT INTO otps (contact, code, created_at, expires_at, attempts, used) VALUES (?,?,?,?,0,0)`,
+      contact, code, nowIso(), addMinutes(Number(process.env.OTP_TTL_MIN || 10))
+    );
+
+    const site = process.env.SITE_NAME || 'Dt. Jyoti';
+    const ok = await sendSms(contact, `${site}: Your verification code is ${code}. Valid for 10 minutes.`);
+    if (!ok) return res.status(500).json({ error: 'sms_failed' });
+
     res.json({ ok: true });
   } catch (e) {
     console.error('OTP request failed', e);
@@ -48,22 +42,37 @@ router.post('/request', async (req, res) => {
 
 router.post('/verify', async (req, res) => {
   try {
-    const raw = req.body?.contact;
-    const code = String(req.body?.code || '');
-    const contact = normalizeContact(raw);
+    const raw = String((req.body && req.body.contact) || '');
+    const contact = normalizePhone(raw);
+    const code = String((req.body && req.body.code) || '').trim();
     if (!contact || !code) return res.status(400).json({ error: 'contact and code required' });
-    const db = await getDb();
-    const row = await db.get('SELECT * FROM otps WHERE contact = ? AND used = 0 ORDER BY created_at DESC LIMIT 1', contact);
-    if (!row) return res.status(400).json({ error: 'no otp requested' });
-    if (new Date(row.expires_at).getTime() < Date.now()) return res.status(400).json({ error: 'otp expired' });
-    const attempts = (row.attempts || 0) + 1;
-    if (attempts > 5) return res.status(429).json({ error: 'too many attempts' });
-    await db.run('UPDATE otps SET attempts = ? WHERE id = ?', attempts, row.id);
-    if (row.code !== code) return res.status(400).json({ error: 'invalid code' });
 
-    await db.run('UPDATE otps SET used = 1 WHERE id = ?', row.id);
+    const db = await getDb();
+    const row = await db.get(
+      `SELECT rowid as id, * FROM otps
+       WHERE contact = ? AND used = 0
+       ORDER BY created_at DESC LIMIT 1`,
+      contact
+    );
+    if (!row) return res.status(400).json({ error: 'invalid code' });
+
+    const expired = new Date(row.expires_at).getTime() < Date.now();
+    if (expired || row.code !== code) {
+      await db.run(`UPDATE otps SET attempts = attempts + 1 WHERE rowid = ?`, row.id);
+      return res.status(400).json({ error: 'invalid code' });
+    }
+
+    await db.run(`UPDATE otps SET used = 1 WHERE rowid = ?`, row.id);
+
     const token = uuidv4();
-    await db.run('INSERT INTO verifications (token, contact, created_at, expires_at) VALUES (?,?,?,?)', token, contact, nowIso(), plusMinutes(30));
+    const ttl = Number(process.env.OTP_TOKEN_TTL_MIN || 30);
+    await db.run(
+      `INSERT INTO verifications (token, contact, created_at, expires_at) VALUES (?,?,?,?)`,
+      token, contact, nowIso(), addMinutes(ttl)
+    );
+
+    await db.run(`DELETE FROM otps WHERE used = 1 OR expires_at < ?`, nowIso());
+
     res.json({ token });
   } catch (e) {
     console.error('OTP verify failed', e);

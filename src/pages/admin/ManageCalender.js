@@ -15,6 +15,9 @@ import {
   CircularProgress,
   Tooltip,
   useMediaQuery,
+  Checkbox,
+  FormGroup,
+  FormControlLabel,
 } from '@mui/material';
 import ChevronLeftIcon from '@mui/icons-material/ChevronLeft';
 import ChevronRightIcon from '@mui/icons-material/ChevronRight';
@@ -39,17 +42,30 @@ function lastOfMonth(d) {
   return dt;
 }
 const WEEKDAY_LABELS = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+// Replace DEFAULT_SLOT_OPTIONS to match server
+const DEFAULT_SLOT_OPTIONS = [
+  '10:00 AM','10:30 AM','11:00 AM','11:30 AM',
+  '12:00 PM','12:30 PM',
+  '2:00 PM','2:30 PM','3:00 PM','3:30 PM','4:00 PM','4:30 PM'
+];
 
 export default function ManageCalendar() {
   const [monthDate, setMonthDate] = useState(firstOfMonth(new Date()));
   const [loading, setLoading] = useState(false);
   const [counts, setCounts] = useState({}); // { 'YYYY-MM-DD': number }
+  const [bookedTimes, setBookedTimes] = useState({});     // { dateStr: string[] }
+  const [dayBooked, setDayBooked] = useState(new Set());  // booked slots in dialog
   const abortRef = useRef(null);
 
   // Day details dialog
   const [openDay, setOpenDay] = useState(null); // 'YYYY-MM-DD' | null
   const [daySlots, setDaySlots] = useState(null); // string[] | null
   const [dayLoading, setDayLoading] = useState(false);
+
+  // NEW: editable selection and options
+  const [slotOptions, setSlotOptions] = useState(DEFAULT_SLOT_OPTIONS);
+  const [editSlots, setEditSlots] = useState(new Set());
+  const [saving, setSaving] = useState(false);
 
   const isSmDown = useMediaQuery((theme) => theme.breakpoints.down('sm'));
 
@@ -78,12 +94,10 @@ export default function ManageCalendar() {
   const loadMonth = async () => {
     try {
       setLoading(true);
-      // cancel previous
       if (abortRef.current) abortRef.current.abort();
       const ac = new AbortController();
       abortRef.current = ac;
 
-      // Build date list for the month
       const dates = [];
       for (let d = 1; d <= monthMeta.daysInMonth; d++) {
         const dt = new Date(monthMeta.first);
@@ -97,17 +111,22 @@ export default function ManageCalendar() {
             const res = await fetch(`/api/appointments/slots?date=${encodeURIComponent(d)}`, { signal: ac.signal });
             if (!res.ok) throw new Error('Bad response');
             const data = await res.json();
-            const n = Array.isArray(data.slots) ? data.slots.length : 0;
-            return [d, n];
+            const booked = Array.isArray(data.booked) ? data.booked : [];
+            return [d, booked];
           } catch {
-            return [d, 0];
+            return [d, []];
           }
         })
       );
 
-      const map = {};
-      results.forEach(([d, n]) => (map[d] = n));
-      setCounts(map);
+      const countsMap = {};
+      const bookedMap = {};
+      results.forEach(([d, booked]) => {
+        countsMap[d] = booked.length;
+        bookedMap[d] = booked;
+      });
+      setCounts(countsMap);
+      setBookedTimes(bookedMap);
     } finally {
       setLoading(false);
     }
@@ -126,11 +145,66 @@ export default function ManageCalendar() {
     try {
       const res = await fetch(`/api/appointments/slots?date=${encodeURIComponent(dateStr)}`);
       const data = await res.json();
-      setDaySlots(Array.isArray(data.slots) ? data.slots : []);
+      const available = Array.isArray(data.slots) ? data.slots : [];
+      const booked = Array.isArray(data.booked) ? data.booked : [];
+      setDaySlots(available);
+      setEditSlots(new Set(available));
+      setDayBooked(new Set(booked));
+
+      // fetch slot options
+      try {
+        const optRes = await fetch('/api/appointments/slot-options');
+        if (optRes.ok) {
+          const optData = await optRes.json();
+          if (Array.isArray(optData.slots) && optData.slots.length) {
+            setSlotOptions(optData.slots);
+          }
+        }
+      } catch { /* ignore */ }
     } catch {
       setDaySlots([]);
+      setEditSlots(new Set());
+      setDayBooked(new Set());
     } finally {
       setDayLoading(false);
+    }
+  };
+
+  const toggleSlot = (slot) =>
+    setEditSlots((prev) => {
+      const next = new Set(prev);
+      next.has(slot) ? next.delete(slot) : next.add(slot);
+      return next;
+    });
+
+  const selectAll = () => setEditSlots(new Set(slotOptions));
+  const clearAll = () => setEditSlots(new Set());
+
+  const saveDaySlots = async () => {
+    if (!openDay) return;
+    setSaving(true);
+    try {
+      const payload = { date: openDay, slots: Array.from(editSlots) }; // desired available
+      const res = await fetch('/api/appointments/slots', {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload),
+      });
+      if (!res.ok) throw new Error('Failed to save');
+      const saved = await res.json();
+      // reflect availability
+      setDaySlots(saved.available || Array.from(editSlots));
+      setEditSlots(new Set(saved.available || Array.from(editSlots)));
+      // booked count/time stays same for the day; update if server returned
+      if (Array.isArray(saved.booked)) {
+        setCounts((prev) => ({ ...prev, [openDay]: saved.booked.length }));
+        setBookedTimes((prev) => ({ ...prev, [openDay]: saved.booked }));
+        setDayBooked(new Set(saved.booked));
+      }
+      // Optionally refresh the month
+      // await loadMonth();
+    } finally {
+      setSaving(false);
     }
   };
 
@@ -273,14 +347,39 @@ export default function ManageCalendar() {
                   {loading ? (
                     <CircularProgress size={18} />
                   ) : (
-                    <Chip
-                      size="small"
-                      label={`${counts[cell.dateStr] ?? 0} slots`}
-                      color={(counts[cell.dateStr] ?? 0) > 0 ? 'success' : 'default'}
-                      variant={(counts[cell.dateStr] ?? 0) > 0 ? 'outlined' : 'filled'}
-                    />
+                    <Tooltip
+                      title={
+                        (bookedTimes[cell.dateStr] && bookedTimes[cell.dateStr].length)
+                          ? `Booked: ${bookedTimes[cell.dateStr].join(', ')}`
+                          : 'No bookings'
+                      }
+                      arrow
+                    >
+                      <Chip
+                        size="small"
+                        label={`${counts[cell.dateStr] ?? 0} booked`}
+                        color={(counts[cell.dateStr] ?? 0) > 0 ? 'warning' : 'default'}
+                        variant={(counts[cell.dateStr] ?? 0) > 0 ? 'outlined' : 'filled'}
+                      />
+                    </Tooltip>
                   )}
                 </Box>
+                {/* NEW: show booked count and tooltip with times */}
+                {bookedTimes[cell.dateStr]?.length > 0 && (
+                  <Tooltip
+                    title={bookedTimes[cell.dateStr].join(', ')}
+                    placement="top"
+                    arrow
+                  >
+                    <Chip
+                      size="small"
+                      label={`${bookedTimes[cell.dateStr].length} booked`}
+                      color="error"
+                      variant="outlined"
+                      sx={{ position: 'absolute', top: 6, right: 8 }}
+                    />
+                  </Tooltip>
+                )}
               </Paper>
             ) : (
               <Box key={`blank-${idx}`} />
@@ -289,7 +388,7 @@ export default function ManageCalendar() {
         </Box>
 
         <Typography variant="caption" color="text.secondary" display="block" sx={{ mt: 2 }}>
-          Click a day to view available slots. This view is read-only.
+          Click a day to manage slot availability. Booked slots are locked.
         </Typography>
       </Paper>
 
@@ -301,18 +400,50 @@ export default function ManageCalendar() {
             <Box sx={{ display: 'flex', justifyContent: 'center', py: 2 }}>
               <CircularProgress />
             </Box>
-          ) : (daySlots?.length ?? 0) > 0 ? (
-            <Stack direction="row" spacing={1} flexWrap="wrap">
-              {daySlots.map((s) => (
-                <Chip key={s} label={s} variant="outlined" />
-              ))}
-            </Stack>
           ) : (
-            <Typography color="text.secondary">No slots available for this date.</Typography>
+            <>
+              <Stack direction="row" spacing={1} sx={{ mb: 1 }}>
+                <Button size="small" onClick={selectAll}>Select all</Button>
+                <Button size="small" onClick={clearAll}>Clear</Button>
+                <Box sx={{ flex: 1 }} />
+                <Typography variant="caption" color="text.secondary">
+                  Selected: {editSlots.size}
+                </Typography>
+              </Stack>
+
+              <FormGroup
+                sx={{
+                  display: 'grid',
+                  gridTemplateColumns: { xs: '1fr 1fr', sm: '1fr 1fr 1fr' },
+                  gap: 1,
+                }}
+              >
+                {slotOptions.map((s) => {
+                  const isBooked = dayBooked.has(s);
+                  return (
+                    <FormControlLabel
+                      key={s}
+                      control={
+                        <Checkbox
+                          size="small"
+                          checked={editSlots.has(s) || isBooked} // booked is always “in use”
+                          onChange={() => !isBooked && toggleSlot(s)}
+                          disabled={isBooked}
+                        />
+                      }
+                      label={isBooked ? `${s} (booked)` : s}
+                    />
+                  );
+                })}
+              </FormGroup>
+            </>
           )}
         </DialogContent>
         <DialogActions>
-          <Button onClick={() => setOpenDay(null)}>Close</Button>
+          <Button onClick={() => setOpenDay(null)} disabled={saving}>Close</Button>
+          <Button onClick={saveDaySlots} disabled={saving} variant="contained">
+            {saving ? 'Saving…' : 'Save'}
+          </Button>
         </DialogActions>
       </Dialog>
     </Box>
