@@ -18,10 +18,12 @@ import {
   Checkbox,
   FormGroup,
   FormControlLabel,
+  Switch, // ADD
 } from '@mui/material';
 import ChevronLeftIcon from '@mui/icons-material/ChevronLeft';
 import ChevronRightIcon from '@mui/icons-material/ChevronRight';
 import RefreshIcon from '@mui/icons-material/Refresh';
+import { alpha } from '@mui/material/styles';
 
 function ymd(d) {
   const dt = new Date(d);
@@ -55,12 +57,15 @@ export default function ManageCalendar() {
   const [counts, setCounts] = useState({}); // { 'YYYY-MM-DD': number }
   const [bookedTimes, setBookedTimes] = useState({});     // { dateStr: string[] }
   const [dayBooked, setDayBooked] = useState(new Set());  // booked slots in dialog
+  const [holidays, setHolidays] = useState({});           // { dateStr: boolean }  // ADD
   const abortRef = useRef(null);
 
   // Day details dialog
-  const [openDay, setOpenDay] = useState(null); // 'YYYY-MM-DD' | null
-  const [daySlots, setDaySlots] = useState(null); // string[] | null
+  const [openDay, setOpenDay] = useState(null);
+  const [daySlots, setDaySlots] = useState(null);
   const [dayLoading, setDayLoading] = useState(false);
+  const [isHoliday, setIsHoliday] = useState(false);
+  const [isPastDay, setIsPastDay] = useState(false); // ADD
 
   // NEW: editable selection and options
   const [slotOptions, setSlotOptions] = useState(DEFAULT_SLOT_OPTIONS);
@@ -86,6 +91,7 @@ export default function ManageCalendar() {
         dateStr,
         label: String(dayNum),
         isToday: dateStr === todayStr,
+        isPast: dateStr < todayStr, // ADD: mark past days
       };
     });
     return { first, last, leadingBlanks, daysInMonth, matrix };
@@ -112,21 +118,25 @@ export default function ManageCalendar() {
             if (!res.ok) throw new Error('Bad response');
             const data = await res.json();
             const booked = Array.isArray(data.booked) ? data.booked : [];
-            return [d, booked];
+            const available = Array.isArray(data.slots) ? data.slots : [];
+            return [d, { booked, available }];
           } catch {
-            return [d, []];
+            return [d, { booked: [], available: [] }];
           }
         })
       );
 
       const countsMap = {};
       const bookedMap = {};
-      results.forEach(([d, booked]) => {
+      const holidayMap = {};
+      results.forEach(([d, { booked, available }]) => {
         countsMap[d] = booked.length;
         bookedMap[d] = booked;
+        holidayMap[d] = (available.length === 0);
       });
       setCounts(countsMap);
       setBookedTimes(bookedMap);
+      setHolidays(holidayMap); // ADD
     } finally {
       setLoading(false);
     }
@@ -141,6 +151,8 @@ export default function ManageCalendar() {
 
   const openDayDialog = async (dateStr) => {
     setOpenDay(dateStr);
+    // mark past day (keeps dialog clickable, but disables editing)
+    setIsPastDay(dateStr < ymd(new Date())); // ADD
     setDayLoading(true);
     try {
       const res = await fetch(`/api/appointments/slots?date=${encodeURIComponent(dateStr)}`);
@@ -150,6 +162,7 @@ export default function ManageCalendar() {
       setDaySlots(available);
       setEditSlots(new Set(available));
       setDayBooked(new Set(booked));
+      setIsHoliday(available.length === 0);
 
       // fetch slot options
       try {
@@ -165,6 +178,7 @@ export default function ManageCalendar() {
       setDaySlots([]);
       setEditSlots(new Set());
       setDayBooked(new Set());
+      setIsHoliday(true);
     } finally {
       setDayLoading(false);
     }
@@ -177,8 +191,18 @@ export default function ManageCalendar() {
       return next;
     });
 
-  const selectAll = () => setEditSlots(new Set(slotOptions));
-  const clearAll = () => setEditSlots(new Set());
+  // ADD: holiday toggle helper
+  const toggleHoliday = (checked) => {
+    setIsHoliday(checked);
+    if (checked) {
+      setEditSlots(new Set());
+    } else {
+      setEditSlots(new Set(slotOptions.filter((s) => !dayBooked.has(s))));
+    }
+  };
+
+  const selectAll = () => { setEditSlots(new Set(slotOptions)); setIsHoliday(false); };
+  const clearAll = () => { setEditSlots(new Set()); setIsHoliday(true); };
 
   const saveDaySlots = async () => {
     if (!openDay) return;
@@ -192,17 +216,19 @@ export default function ManageCalendar() {
       });
       if (!res.ok) throw new Error('Failed to save');
       const saved = await res.json();
+      const savedAvail = saved.available || Array.from(editSlots);
       // reflect availability
-      setDaySlots(saved.available || Array.from(editSlots));
-      setEditSlots(new Set(saved.available || Array.from(editSlots)));
-      // booked count/time stays same for the day; update if server returned
+      setDaySlots(savedAvail);
+      setEditSlots(new Set(savedAvail));
+      setIsHoliday(savedAvail.length === 0); // ADD
+      // update booked + holiday on calendar
       if (Array.isArray(saved.booked)) {
         setCounts((prev) => ({ ...prev, [openDay]: saved.booked.length }));
         setBookedTimes((prev) => ({ ...prev, [openDay]: saved.booked }));
         setDayBooked(new Set(saved.booked));
       }
-      // Optionally refresh the month
-      // await loadMonth();
+      setHolidays((prev) => ({ ...prev, [openDay]: savedAvail.length === 0 })); // ADD
+      // optionally await loadMonth();
     } finally {
       setSaving(false);
     }
@@ -330,55 +356,63 @@ export default function ManageCalendar() {
                   minHeight: 88,
                   cursor: 'pointer',
                   border: '1px solid',
-                  borderColor: 'divider',
+                  borderColor: holidays[cell.dateStr] ? 'error.light' : (cell.isPast ? 'divider' : 'divider'),
                   transition: 'transform .15s ease, box-shadow .15s ease, border-color .15s ease',
                   '&:hover': { boxShadow: 3, transform: 'translateY(-2px)' },
                   position: 'relative',
-                  background:
-                    cell.isToday
-                      ? (theme) => (theme.palette.mode === 'dark' ? 'rgba(255,255,255,0.06)' : '#fffef7')
-                      : 'background.paper',
+                  background: (theme) => {
+                    if (holidays[cell.dateStr]) {
+                      // transparent red for holiday
+                      return alpha(theme.palette.error.main, theme.palette.mode === 'dark' ? 0.22 : 0.08);
+                    }
+                    if (cell.isPast && !cell.isToday) {
+                      // light gray tint for past days
+                      return alpha(theme.palette.grey[500], theme.palette.mode === 'dark' ? 0.18 : 0.08);
+                    }
+                    if (cell.isToday) {
+                      return theme.palette.mode === 'dark' ? 'rgba(255,255,255,0.06)' : '#fffef7';
+                    }
+                    return theme.palette.background.paper;
+                  },
                 }}
               >
-                <Typography variant="caption" sx={{ position: 'absolute', top: 6, left: 8, fontWeight: 700 }}>
+                <Typography
+                  variant="caption"
+                  sx={{
+                    position: 'absolute',
+                    top: 6,
+                    left: 8,
+                    fontWeight: 700,
+                    color: (theme) => (cell.isPast && !cell.isToday ? theme.palette.text.disabled : theme.palette.text.primary), // gray label for past
+                  }}
+                >
                   {cell.label}
                 </Typography>
                 <Box sx={{ height: 1, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                  {loading ? (
-                    <CircularProgress size={18} />
-                  ) : (
-                    <Tooltip
-                      title={
-                        (bookedTimes[cell.dateStr] && bookedTimes[cell.dateStr].length)
-                          ? `Booked: ${bookedTimes[cell.dateStr].join(', ')}`
-                          : 'No bookings'
-                      }
-                      arrow
-                    >
+                  {loading ? <CircularProgress size={18} /> : null}
+                </Box>
+
+                {/* Show Holiday OR Booked count */}
+                {holidays[cell.dateStr] ? (
+                  <Chip
+                    size="small"
+                    label="Holiday"
+                    color="error"
+                    variant="outlined"
+                    sx={{ position: 'absolute', top: 6, right: 8 }}
+                  />
+                ) : (
+                  bookedTimes[cell.dateStr]?.length > 0 && (
+                    <Tooltip title={`Booked: ${bookedTimes[cell.dateStr].join(', ')}`} placement="top" arrow>
                       <Chip
                         size="small"
-                        label={`${counts[cell.dateStr] ?? 0} booked`}
-                        color={(counts[cell.dateStr] ?? 0) > 0 ? 'warning' : 'default'}
-                        variant={(counts[cell.dateStr] ?? 0) > 0 ? 'outlined' : 'filled'}
+                        label={`${bookedTimes[cell.dateStr].length} booked`}
+                        color="warning"
+                        variant="outlined"
+                        sx={{ position: 'absolute', top: 6, right: 8 }}
                       />
                     </Tooltip>
-                  )}
-                </Box>
-                {/* NEW: show booked count and tooltip with times */}
-                {bookedTimes[cell.dateStr]?.length > 0 && (
-                  <Tooltip
-                    title={bookedTimes[cell.dateStr].join(', ')}
-                    placement="top"
-                    arrow
-                  >
-                    <Chip
-                      size="small"
-                      label={`${bookedTimes[cell.dateStr].length} booked`}
-                      color="error"
-                      variant="outlined"
-                      sx={{ position: 'absolute', top: 6, right: 8 }}
-                    />
-                  </Tooltip>
+                  )
                 )}
               </Paper>
             ) : (
@@ -394,7 +428,15 @@ export default function ManageCalendar() {
 
       {/* Day details dialog */}
       <Dialog open={Boolean(openDay)} onClose={() => setOpenDay(null)} fullWidth maxWidth="xs">
-        <DialogTitle>Available slots — {openDay}</DialogTitle>
+        <DialogTitle>
+          Available slots — {openDay}
+          {isHoliday && (
+            <Chip label="Holiday" size="small" color="error" variant="outlined" sx={{ ml: 1, verticalAlign: 'middle' }} />
+          )}
+          {isPastDay && (
+            <Chip label="Past day" size="small" color="default" variant="outlined" sx={{ ml: 1, verticalAlign: 'middle' }} />
+          )}
+        </DialogTitle>
         <DialogContent dividers>
           {dayLoading ? (
             <Box sx={{ display: 'flex', justifyContent: 'center', py: 2 }}>
@@ -402,17 +444,32 @@ export default function ManageCalendar() {
             </Box>
           ) : (
             <>
-              <Stack direction="row" spacing={1} sx={{ mb: 1 }}>
-                <Button size="small" onClick={selectAll}>Select all</Button>
-                <Button size="small" onClick={clearAll}>Clear</Button>
-                <Box sx={{ flex: 1 }} />
+              {/* Holiday toggle (disabled for past days) */}
+              <Stack direction="row" alignItems="center" justifyContent="space-between" sx={{ mb: 1 }}>
+                <FormControlLabel
+                  control={
+                    <Switch
+                      checked={isHoliday}
+                      onChange={(e) => toggleHoliday(e.target.checked)}
+                      disabled={isPastDay} // DISABLE when past
+                    />
+                  }
+                  label="Mark whole day as holiday (close bookings)"
+                />
                 <Typography variant="caption" color="text.secondary">
                   Selected: {editSlots.size}
                 </Typography>
               </Stack>
 
+              <Stack direction="row" spacing={1} sx={{ mb: 1 }}>
+                <Button size="small" onClick={selectAll} disabled={isHoliday || isPastDay}>Select all</Button>
+                <Button size="small" onClick={clearAll} disabled={isPastDay}>Clear</Button>
+              </Stack>
+
               <FormGroup
                 sx={{
+                  opacity: (isHoliday || isPastDay) ? 0.5 : 1,                  // VISUAL DISABLE
+                  pointerEvents: (isHoliday || isPastDay) ? 'none' : 'auto',    // NO EDITS ON PAST/HOLIDAY
                   display: 'grid',
                   gridTemplateColumns: { xs: '1fr 1fr', sm: '1fr 1fr 1fr' },
                   gap: 1,
@@ -426,9 +483,9 @@ export default function ManageCalendar() {
                       control={
                         <Checkbox
                           size="small"
-                          checked={editSlots.has(s) || isBooked} // booked is always “in use”
-                          onChange={() => !isBooked && toggleSlot(s)}
-                          disabled={isBooked}
+                          checked={editSlots.has(s) || isBooked}
+                          onChange={() => !isBooked && !isHoliday && !isPastDay && toggleSlot(s)}
+                          disabled={isBooked || isHoliday || isPastDay} // DISABLE when past
                         />
                       }
                       label={isBooked ? `${s} (booked)` : s}
@@ -436,12 +493,20 @@ export default function ManageCalendar() {
                   );
                 })}
               </FormGroup>
+
+              {(isHoliday || isPastDay) && (
+                <Typography variant="caption" color="text.secondary" sx={{ mt: 1 }} display="block">
+                  {isPastDay
+                    ? 'Past day: editing is disabled.'
+                    : 'Holiday: all remaining slots are closed. Existing bookings (if any) stay.'}
+                </Typography>
+              )}
             </>
           )}
         </DialogContent>
         <DialogActions>
           <Button onClick={() => setOpenDay(null)} disabled={saving}>Close</Button>
-          <Button onClick={saveDaySlots} disabled={saving} variant="contained">
+          <Button onClick={saveDaySlots} disabled={saving || isPastDay} variant="contained">
             {saving ? 'Saving…' : 'Save'}
           </Button>
         </DialogActions>

@@ -34,7 +34,7 @@ async function init() {
   if (!db) await connect();
   await run('PRAGMA foreign_keys = ON');
 
-  // Core tables (add others you already have)
+  // Appointments table
   await run(`CREATE TABLE IF NOT EXISTS appointments (
     id TEXT PRIMARY KEY,
     name TEXT NOT NULL,
@@ -45,14 +45,14 @@ async function init() {
   )`);
   await run(`CREATE UNIQUE INDEX IF NOT EXISTS idx_appointments_date_slot ON appointments(date, slot)`);
 
-  // Admin-blocked slots
+  // Per-day closures
   await run(`CREATE TABLE IF NOT EXISTS unavailable_slots (
     date TEXT NOT NULL,
     slot TEXT NOT NULL,
     PRIMARY KEY (date, slot)
   )`);
 
-  // OTP + verification
+  // OTP and verification (if not already present)
   await run(`CREATE TABLE IF NOT EXISTS otps (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     contact TEXT NOT NULL,

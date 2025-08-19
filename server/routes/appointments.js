@@ -2,80 +2,102 @@ const { Router } = require('express');
 const { v4: uuidv4 } = require('uuid');
 const { getDb } = require('../db');
 const nodemailer = require('nodemailer');
-const { escapeHtml } = require('../utils/escape');
-const { createInvite } = require('../utils/ics');
-const { sendSms, normalizePhone } = require('../utils/sms'); // import normalizePhone
+
+// Slot options (fallback if not provided by DB/env)
+const SLOT_OPTIONS = (process.env.SLOT_OPTIONS || '')
+  .split(',')
+  .map(s => s.trim())
+  .filter(Boolean);
+const DEFAULT_SLOT_OPTIONS = SLOT_OPTIONS.length ? SLOT_OPTIONS : [
+  '10:00 AM','10:30 AM','11:00 AM','11:30 AM',
+  '12:00 PM','12:30 PM',
+  '2:00 PM','2:30 PM','3:00 PM','3:30 PM','4:00 PM','4:30 PM'
+];
 
 const router = Router();
 
-// Generate slots: 10:00–17:00, every 30 mins, excluding 13:00–14:00
-function generateSlots() {
-  const out = [];
-  const toLabel = (h24, m) => {
-    const ampm = h24 >= 12 ? 'PM' : 'AM';
-    let h12 = h24 % 12; if (h12 === 0) h12 = 12;
-    const mm = String(m).padStart(2, '0');
-    return `${h12}:${mm} ${ampm}`;
-  };
-  for (let h = 10; h < 17; h++) {
-    if (h === 13) continue; // break 1–2 PM
-    for (let m = 0; m < 60; m += 30) {
-      out.push(toLabel(h, m));
-    }
-  }
-  return out;
-}
-
-const ALL_SLOTS = generateSlots();
-const slotIndex = Object.fromEntries(ALL_SLOTS.map((s, i) => [s, i]));
-
-// Expose master slot options
+// GET available slot options (for UI)
 router.get('/slot-options', (_req, res) => {
-  res.json({ slots: ALL_SLOTS });
+  res.json({ slots: DEFAULT_SLOT_OPTIONS });
 });
 
-// Available slots = ALL_SLOTS - booked - unavailable
+// GET slots + booked for a day
 router.get('/slots', async (req, res) => {
-  const { date } = req.query;
-  if (!date) return res.status(400).json({ error: 'date is required' });
-  const db = await getDb();
-  const bookedRows = await db.all('SELECT slot FROM appointments WHERE date = ?', date);
-  const blockedRows = await db.all('SELECT slot FROM unavailable_slots WHERE date = ?', date);
-  const booked = bookedRows.map(r => r.slot).sort((a,b)=>slotIndex[a]-slotIndex[b]);
-  const blocked = new Set(blockedRows.map(r => r.slot));
-  const available = ALL_SLOTS.filter(s => !booked.includes(s) && !blocked.has(s));
-  res.json({ date, slots: available, booked, total: ALL_SLOTS.length });
+  try {
+    const date = String(req.query.date || '').slice(0, 10);
+    if (!date) return res.status(400).json({ error: 'date required (YYYY-MM-DD)' });
+
+    const db = await getDb();
+    const bookedRows = await db.all(`SELECT slot FROM appointments WHERE date = ?`, date);
+    const booked = bookedRows.map(r => r.slot);
+
+    const unavailableRows = await db.all(`SELECT slot FROM unavailable_slots WHERE date = ?`, date);
+    const unavailable = new Set(unavailableRows.map(r => r.slot));
+
+    const available = DEFAULT_SLOT_OPTIONS.filter(s => !booked.includes(s) && !unavailable.has(s));
+
+    res.json({ date, slots: available, booked });
+  } catch (e) {
+    console.error('GET /slots failed', e);
+    res.status(500).json({ error: 'failed' });
+  }
 });
 
-// Admin: set available slots for a given date.
-// Body: { date: 'YYYY-MM-DD', slots: ['10:00 AM', ...] } (desired available)
-// Booked slots remain unavailable regardless of input.
+// PUT desired available slots for a day (holiday = send [])
 router.put('/slots', async (req, res) => {
-  const { date, slots } = req.body || {};
-  if (!date || !Array.isArray(slots)) return res.status(400).json({ error: 'date and slots[] required' });
+  try {
+    const { date, slots } = req.body || {};
+    const day = String(date || '').slice(0, 10);
+    if (!day || !Array.isArray(slots)) {
+      return res.status(400).json({ error: 'date and slots[] required' });
+    }
 
-  // validate values are in ALL_SLOTS
-  const desired = slots.filter((s) => ALL_SLOTS.includes(s));
-  const db = await getDb();
+    // Normalize and validate against known options
+    const desired = new Set(slots.filter(s => DEFAULT_SLOT_OPTIONS.includes(s)));
 
-  const bookedRows = await db.all('SELECT slot FROM appointments WHERE date = ?', date);
-  const booked = new Set(bookedRows.map(r => r.slot));
+    const db = await getDb();
 
-  // compute which non-booked slots should be blocked
-  const desiredSet = new Set(desired.filter((s) => !booked.has(s)));
-  const toBlock = ALL_SLOTS.filter((s) => !booked.has(s) && !desiredSet.has(s));
+    // Fetch booked for the day (never touched)
+    const bookedRows = await db.all(`SELECT slot FROM appointments WHERE date = ?`, day);
+    const booked = new Set(bookedRows.map(r => r.slot));
 
-  // replace unavailable rows for the date
-  await db.run('DELETE FROM unavailable_slots WHERE date = ?', date);
-  if (toBlock.length) {
-    const values = toBlock.flatMap((s) => [date, s]);
-    const placeholders = toBlock.map(() => '(?, ?)').join(', ');
-    await db.run(`INSERT INTO unavailable_slots (date, slot) VALUES ${placeholders}`, values);
+    // We model “closed” slots in unavailable_slots (per-day)
+    // For each option not in desired and not booked -> ensure unavailable row exists
+    // For each option in desired -> ensure unavailable row removed
+    const toClose = DEFAULT_SLOT_OPTIONS.filter(s => !desired.has(s) && !booked.has(s));
+    const toOpen = DEFAULT_SLOT_OPTIONS.filter(s => desired.has(s));
+
+    await db.run('BEGIN');
+    try {
+      if (toOpen.length) {
+        const placeholders = toOpen.map(() => '?').join(',');
+        await db.run(
+          `DELETE FROM unavailable_slots WHERE date = ? AND slot IN (${placeholders})`,
+          day, ...toOpen
+        );
+      }
+      for (const s of toClose) {
+        await db.run(
+          `INSERT OR IGNORE INTO unavailable_slots (date, slot) VALUES (?, ?)`,
+          day, s
+        );
+      }
+      await db.run('COMMIT');
+    } catch (e) {
+      await db.run('ROLLBACK');
+      throw e;
+    }
+
+    // Return current state
+    const unavailableRows = await db.all(`SELECT slot FROM unavailable_slots WHERE date = ?`, day);
+    const unavailableSet = new Set(unavailableRows.map(r => r.slot));
+    const available = DEFAULT_SLOT_OPTIONS.filter(s => !booked.has(s) && !unavailableSet.has(s));
+
+    res.json({ date: day, available, booked: Array.from(booked) });
+  } catch (e) {
+    console.error('PUT /slots failed', e);
+    res.status(500).json({ error: 'failed' });
   }
-
-  const blocked = new Set(toBlock);
-  const available = ALL_SLOTS.filter(s => !booked.has(s) && !blocked.has(s));
-  res.json({ date, available, booked: Array.from(booked) });
 });
 
 // — Existing endpoints below —
