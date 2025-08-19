@@ -2,6 +2,7 @@ const { Router } = require('express');
 const { v4: uuidv4 } = require('uuid');
 const { getDb } = require('../db');
 const nodemailer = require('nodemailer');
+const { sendSms, normalizePhone } = require('../utils/sms'); // ADD
 
 // Slot options (fallback if not provided by DB/env)
 const SLOT_OPTIONS = (process.env.SLOT_OPTIONS || '')
@@ -134,18 +135,16 @@ router.post('/', async (req, res) => {
       const v = await db.get('SELECT * FROM verifications WHERE token = ? LIMIT 1', token);
       if (!v) return res.status(401).json({ error: 'invalid verification' });
 
-      const contactNorm = normalizePhone(contact);              // normalize the same way OTP stored it
+      const contactNorm = normalizePhone(contact); // now defined
       if (v.contact !== contactNorm) return res.status(401).json({ error: 'contact mismatch' });
       if (new Date(v.expires_at).getTime() < Date.now()) return res.status(401).json({ error: 'verification expired' });
-
-      // Optionally one-time use token
-      // await db.run('DELETE FROM verifications WHERE token = ?', token);
     } catch (ve) {
       return res.status(401).json({ error: 'verification failed' });
     }
 
     // Prevent booking a blocked or non-existent slot
-    if (!ALL_SLOTS.includes(slot)) return res.status(400).json({ error: 'Invalid slot' });
+    if (!DEFAULT_SLOT_OPTIONS.includes(slot)) return res.status(400).json({ error: 'Invalid slot' }); // FIX
+
     const db = await getDb();
     const isBlocked = await db.get('SELECT 1 AS x FROM unavailable_slots WHERE date = ? AND slot = ? LIMIT 1', date, slot);
     if (isBlocked) return res.status(409).json({ error: 'Slot unavailable' });
@@ -213,7 +212,7 @@ router.post('/', async (req, res) => {
         });
       }
 
-      try { await sendSms(contact, `Appt ${date} ${slot}. Join: ${meetingUrl}`); } catch {}
+      try { await sendSms(contact, `Appt ${date} ${slot}.`); } catch {}
     } catch (mailErr) {
       console.warn('Appointment mail notification failed:', mailErr.message);
     }
