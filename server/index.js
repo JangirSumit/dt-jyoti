@@ -7,13 +7,14 @@ const cors = require('cors');
 const { init } = require('./db');
 const { appointmentsRouter } = require('./routes/appointments');
 const { otpRouter } = require('./routes/otp');
+const { paymentsRouter } = require('./routes/payments'); // ADD
 
 (async () => {
   await init();
 
   const app = express();
   app.use(cors());
-  app.use(express.json());
+  app.use(express.json()); // ADD: for normal JSON routes
 
   app.get('/health', (_req, res) => {
     res.json({
@@ -47,6 +48,7 @@ const { otpRouter } = require('./routes/otp');
 
   app.use('/api/appointments', appointmentsRouter);
   app.use('/api/otp', otpRouter);
+  app.use('/api/payments', paymentsRouter); // ADD
 
   const port = Number(process.env.PORT || 4000);
   console.log('[Twilio configured]', {

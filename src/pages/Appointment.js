@@ -22,6 +22,7 @@ export default function Appointment() {
   const [otpToken, setOtpToken] = useState('');
   const [otpBusy, setOtpBusy] = useState(false);
   const [otpOpen, setOtpOpen] = useState(false);
+  const [createdAppt, setCreatedAppt] = useState(null);
 
   const fetchSlots = async (date) => {
     try {
@@ -100,7 +101,8 @@ export default function Appointment() {
       setSnackbar({ open: true, message: err.error || 'Booking failed.', severity: 'error' });
       return false;
     }
-    await res.json();
+    const appointmentData = await res.json();
+    setCreatedAppt(appointmentData); // Save the created appointment object
     const today = getToday();
     setBooking({ name: '', contact: '', email: '', date: today, slot: '' });
     await fetchSlots(today);
@@ -225,6 +227,7 @@ export default function Appointment() {
       <Snackbar open={snackbar.open} autoHideDuration={3000} onClose={() => setSnackbar((s) => ({ ...s, open: false }))}>
         <Alert severity={snackbar.severity} variant="filled">{snackbar.message}</Alert>
       </Snackbar>
+
     </Paper>
   </Section>
     </>

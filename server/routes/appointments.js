@@ -2,7 +2,8 @@ const { Router } = require('express');
 const { v4: uuidv4 } = require('uuid');
 const { getDb } = require('../db');
 const nodemailer = require('nodemailer');
-const { sendSms, normalizePhone } = require('../utils/sms'); // ensure this import exists
+const { sendSms, normalizePhone } = require('../utils/sms');
+const { getRazorpay } = require('../utils/razorpay'); // ADD
 
 // Slot options (fallback if not provided by DB/env)
 const SLOT_OPTIONS = (process.env.SLOT_OPTIONS || '')
@@ -232,24 +233,64 @@ router.delete('/:id', async (req, res) => {
   res.json(appt);
 });
 
-// Send a simple confirmation SMS asking the customer to complete payment
+// Send SMS with a Razorpay payment link to complete payment
 router.post('/:id/confirm-sms', async (req, res) => {
   try {
     const { id } = req.params;
     const db = await getDb();
     const appt = await db.get(
-      'SELECT name, contact, date, slot FROM appointments WHERE id = ? LIMIT 1',
+      'SELECT id,name,contact,email,date,slot,paid,payment_link_id,payment_link_url FROM appointments WHERE id = ? LIMIT 1',
       id
     );
     if (!appt) return res.status(404).json({ error: 'not found' });
+    if (appt.paid) return res.status(409).json({ error: 'already paid' });
+
+    const amountInr = parseInt(process.env.APPOINTMENT_FEE_INR || '500', 10);
+    const rz = getRazorpay();
+
+    // Reuse existing link if present, else create
+    let linkUrl = appt.payment_link_url || '';
+    let linkId = appt.payment_link_id || '';
+
+    if (!linkUrl) {
+      try {
+        const pl = await rz.paymentLink.create({
+          amount: amountInr * 100, // FIX: paise
+          currency: 'INR',
+          accept_partial: false,
+          description: `Consultation on ${appt.date} at ${appt.slot}`,
+          customer: {
+            name: appt.name,
+            contact: String(appt.contact),
+            email: appt.email || undefined,
+          },
+          notify: { sms: true, email: !!appt.email },
+          reminder_enable: true,
+          notes: { appointmentId: appt.id, date: appt.date, slot: appt.slot },
+        });
+        linkId = pl.id;
+        linkUrl = pl.short_url || pl.share_url || pl.url;
+        await db.run(
+          `UPDATE appointments SET payment_link_id = ?, payment_link_url = ? WHERE id = ?`,
+          linkId, linkUrl, appt.id
+        );
+      } catch (err) {
+        console.error('payment link create failed', err);
+        return res.status(500).json({ error: 'payment link failed' });
+      }
+    }
 
     const to = normalizePhone(appt.contact);
-    const msg = `Hello ${appt.name}, your appointment is scheduled on ${appt.date} at ${appt.slot}. Please complete the payment to confirm your appointment.`;
+    const msg = `Hi ${appt.name}, your appointment is on ${appt.date} at ${appt.slot}. Please complete the payment of ₹${amountInr} to confirm: ${linkUrl}\n- Dt. Jyoti`;
 
-    const ok = await sendSms(to, msg);
-    if (!ok) return res.status(500).json({ error: 'sms failed' });
+    try {
+      await sendSms(to, msg);
+    } catch (e) {
+      console.error('sms send failed', e);
+      return res.status(500).json({ error: 'sms failed', link: linkUrl });
+    }
 
-    res.json({ ok: true });
+    res.json({ ok: true, link: linkUrl, linkId });
   } catch (e) {
     console.error('confirm-sms error', e);
     res.status(500).json({ error: 'failed' });

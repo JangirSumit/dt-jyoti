@@ -34,7 +34,6 @@ async function init() {
   if (!db) await connect();
   await run('PRAGMA foreign_keys = ON');
 
-  // Appointments table
   await run(`CREATE TABLE IF NOT EXISTS appointments (
     id TEXT PRIMARY KEY,
     name TEXT NOT NULL,
@@ -44,6 +43,16 @@ async function init() {
     slot TEXT NOT NULL
   )`);
   await run(`CREATE UNIQUE INDEX IF NOT EXISTS idx_appointments_date_slot ON appointments(date, slot)`);
+
+  // ADD: payment columns (ignore errors if they already exist)
+  try { await run(`ALTER TABLE appointments ADD COLUMN paid INTEGER NOT NULL DEFAULT 0`); } catch {}
+  try { await run(`ALTER TABLE appointments ADD COLUMN payment_order_id TEXT`); } catch {}
+  try { await run(`ALTER TABLE appointments ADD COLUMN payment_id TEXT`); } catch {}
+  try { await run(`ALTER TABLE appointments ADD COLUMN payment_amount INTEGER`); } catch {}
+  try { await run(`ALTER TABLE appointments ADD COLUMN payment_currency TEXT`); } catch {}
+  try { await run(`ALTER TABLE appointments ADD COLUMN paid_at TEXT`); } catch {}
+  try { await run(`ALTER TABLE appointments ADD COLUMN payment_link_id TEXT`); } catch {}
+  try { await run(`ALTER TABLE appointments ADD COLUMN payment_link_url TEXT`); } catch {}
 
   // Per-day closures
   await run(`CREATE TABLE IF NOT EXISTS unavailable_slots (

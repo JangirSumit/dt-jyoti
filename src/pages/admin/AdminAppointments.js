@@ -68,7 +68,9 @@ export default function AdminAppointments() {
                 <Typography sx={{ color: 'text.secondary', fontSize: { xs: '0.85rem', md: '0.95rem' }, wordBreak: 'break-word', overflowWrap: 'anywhere' }}>
                   {a.contact}{a.email ? ` • ${a.email}` : ''}
                 </Typography>
-                <Typography sx={{ fontSize: { xs: '0.85rem', md: '0.95rem' } }}>{a.date} @ {a.slot}</Typography>
+                <Typography sx={{ fontSize: { xs: '0.85rem', md: '0.95rem' } }}>
+                  {a.date} @ {a.slot} {a.paid ? '• Paid' : '• Unpaid'}
+                </Typography>
               </Grid>
               <Grid item xs={2} md={1} sx={{ display: 'flex', justifyContent: { xs: 'flex-end', md: 'center' } }}>
                 <IconButton
@@ -138,7 +140,7 @@ export default function AdminAppointments() {
                 onClick={() => confirmBySms(selected.id)}
                 disabled={confirming}
               >
-                {confirming ? 'Sending…' : 'Confirm'}
+                {confirming ? 'Sending…' : 'Confirm (Send link)'}
               </Button>
               <Button color="error" onClick={() => cancel(selected.id)}>
                 Delete
