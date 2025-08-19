@@ -2,7 +2,7 @@ const { Router } = require('express');
 const { v4: uuidv4 } = require('uuid');
 const { getDb } = require('../db');
 const nodemailer = require('nodemailer');
-const { sendSms, normalizePhone } = require('../utils/sms'); // ADD
+const { sendSms, normalizePhone } = require('../utils/sms'); // ensure this import exists
 
 // Slot options (fallback if not provided by DB/env)
 const SLOT_OPTIONS = (process.env.SLOT_OPTIONS || '')
@@ -230,6 +230,30 @@ router.delete('/:id', async (req, res) => {
   if (!appt) return res.status(404).json({ error: 'Not found' });
   await db.run('DELETE FROM appointments WHERE id = ?', req.params.id);
   res.json(appt);
+});
+
+// Send a simple confirmation SMS asking the customer to complete payment
+router.post('/:id/confirm-sms', async (req, res) => {
+  try {
+    const { id } = req.params;
+    const db = await getDb();
+    const appt = await db.get(
+      'SELECT name, contact, date, slot FROM appointments WHERE id = ? LIMIT 1',
+      id
+    );
+    if (!appt) return res.status(404).json({ error: 'not found' });
+
+    const to = normalizePhone(appt.contact);
+    const msg = `Hello ${appt.name}, your appointment is scheduled on ${appt.date} at ${appt.slot}. Please complete the payment to confirm your appointment.`;
+
+    const ok = await sendSms(to, msg);
+    if (!ok) return res.status(500).json({ error: 'sms failed' });
+
+    res.json({ ok: true });
+  } catch (e) {
+    console.error('confirm-sms error', e);
+    res.status(500).json({ error: 'failed' });
+  }
 });
 
 module.exports = { appointmentsRouter: router };
