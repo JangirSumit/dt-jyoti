@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { Paper, Typography, IconButton, Grid, Dialog, DialogTitle, DialogContent, DialogActions, Button, Stack, Box } from '@mui/material';
+import { Paper, Typography, IconButton, Grid, Dialog, DialogTitle, DialogContent, DialogActions, Button, Stack, Box, Chip } from '@mui/material';
 import DeleteIcon from '@mui/icons-material/Delete';
 import CloseIcon from '@mui/icons-material/Close';
 
@@ -69,7 +69,16 @@ export default function AdminAppointments() {
                   {a.contact}{a.email ? ` • ${a.email}` : ''}
                 </Typography>
                 <Typography sx={{ fontSize: { xs: '0.85rem', md: '0.95rem' } }}>
-                  {a.date} @ {a.slot} {a.paid ? '• Paid' : '• Unpaid'}
+                  {a.date} @ {a.slot}
+                  {!a.paid ? (
+                    <Chip
+                      label="Unpaid"
+                      color="warning"
+                      size="small"
+                      variant="outlined"
+                      sx={{ ml: 1, verticalAlign: 'middle' }}
+                    />
+                  ) : null}
                 </Typography>
               </Grid>
               <Grid item xs={2} md={1} sx={{ display: 'flex', justifyContent: { xs: 'flex-end', md: 'center' } }}>
