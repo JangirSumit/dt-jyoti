@@ -117,6 +117,17 @@ async function init() {
 
   // Helpful index
   await run(`CREATE UNIQUE INDEX IF NOT EXISTS idx_patients_uid ON patients(patient_uid)`);
+
+  // NEW: prescriptions table
+  await run(`CREATE TABLE IF NOT EXISTS prescriptions (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    patient_id INTEGER NOT NULL,
+    content TEXT NOT NULL,
+    created_at TEXT NOT NULL,
+    updated_at TEXT NOT NULL,
+    FOREIGN KEY (patient_id) REFERENCES patients(id) ON DELETE CASCADE
+  )`);
+  await run(`CREATE INDEX IF NOT EXISTS idx_prescriptions_patient_id ON prescriptions(patient_id)`);
 }
 
 function getDb() {

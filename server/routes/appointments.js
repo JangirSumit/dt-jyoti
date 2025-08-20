@@ -301,4 +301,4 @@ router.post('/:id/confirm-sms', async (req, res) => {
   }
 });
 
-module.exports = { appointmentsRouter: router };
+module.exports = router;

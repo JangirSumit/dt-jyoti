@@ -182,4 +182,30 @@ router.put('/:id/meta', async (req, res) => {
   }
 });
 
-module.exports = { patientsRouter: router };
+// Create prescription for a patient
+router.post('/:id/prescriptions', async (req, res) => {
+  try {
+    const idOrKey = String(req.params.id || '').trim();
+    const content = String(req.body?.content || '').trim();
+    if (!content) return res.status(400).json({ error: 'content required' });
+
+    const db = await getDb();
+
+    // Find patient strictly by id
+    const patient = await db.get(`SELECT id FROM patients WHERE id = ?`, idOrKey);
+    if (!patient) return res.status(404).json({ error: 'patient not found' });
+
+    const now = new Date().toISOString();
+    const r = await db.run(
+      `INSERT INTO prescriptions (patient_id, content, created_at, updated_at)
+       VALUES (?, ?, ?, ?)`,
+      patient.id, content, now, now
+    );
+    return res.json({ ok: true, id: r.lastID, created_at: now });
+  } catch (e) {
+    console.error('create prescription failed', e);
+    return res.status(500).json({ error: 'failed' });
+  }
+});
+
+module.exports = router;

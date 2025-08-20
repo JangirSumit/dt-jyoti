@@ -52,4 +52,4 @@ router.post('/razorpay/webhook', raw({ type: 'application/json' }), async (req, 
   }
 });
 
-module.exports = { paymentsRouter: router };
+module.exports = router;

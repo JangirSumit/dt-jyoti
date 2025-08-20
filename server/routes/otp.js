@@ -80,4 +80,4 @@ router.post('/verify', async (req, res) => {
   }
 });
 
-module.exports = { otpRouter: router };
+module.exports = router;

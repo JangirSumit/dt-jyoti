@@ -50,6 +50,14 @@ export default function AdminAppointments() {
   };
   const [rxDietOpen, setRxDietOpen] = useState(['morning']);
 
+  // ADD: per-section generating state
+  const [rxSuggesting, setRxSuggesting] = useState({});
+
+  // View prescriptions dialog state
+  const [rxViewOpen, setRxViewOpen] = useState(false);
+  const [rxViewLoading, setRxViewLoading] = useState(false);
+  const [rxList, setRxList] = useState([]);
+
   const load = async () => {
     const token = localStorage.getItem('admintoken');
     const res = await fetch('/api/appointments', { headers: token ? { Authorization: `Bearer ${token}` } : {} });
@@ -233,10 +241,54 @@ export default function AdminAppointments() {
     return sec.length ? `Diet Plan\n${sec.join('\n')}` : '';
   };
 
+  // Helper to request AI suggestion for a section and fill if empty
+  const suggestSection = async (sectionKey) => {
+    if (!selected) return;
+    const patientKey = String(selected.contact || selected.email || '').trim();
+    if (!patientKey) return;
+
+    // Skip if already has text
+    if ((rxDietPlan[sectionKey] || '').trim()) return;
+
+    try {
+      setRxSuggesting((m) => ({ ...m, [sectionKey]: true }));
+      const token = localStorage.getItem('admintoken');
+      const res = await fetch('/api/ai/diet-suggest', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          ...(token ? { Authorization: `Bearer ${token}` } : {})
+        },
+        body: JSON.stringify({ patientKey, section: sectionKey })
+      });
+      if (res.ok) {
+        const data = await res.json();
+        const text = (data?.text || '').trim();
+        if (text) {
+          setRxDietPlan((p) => ({ ...p, [sectionKey]: text }));
+        }
+      }
+    } catch (e) {
+      console.error('AI suggestion failed', sectionKey, e);
+    } finally {
+      setRxSuggesting((m) => ({ ...m, [sectionKey]: false }));
+    }
+  };
+
   const openNewRxForAppointment = () => {
     setRxDietPlan(defaultDietPlanRx);
     setRxDietOpen(['morning']); // reset to only Morning visible
     setRxNewOpen(true);
+    // Kick off AI suggestion for Morning
+    setTimeout(() => suggestSection('morning'), 0);
+  };
+
+  // When adding next section, also fetch AI suggestion
+  const nextKey = RX_DIET_ORDER.find(k => !rxDietOpen.includes(k));
+  const onClickHandler = () => {
+    setRxDietOpen(prev => [...prev, nextKey]);
+    // defer to ensure state updated, then fetch
+    setTimeout(() => suggestSection(nextKey), 0);
   };
 
   const saveNewRxForAppointment = async () => {
@@ -272,6 +324,40 @@ export default function AdminAppointments() {
     } finally {
       setRxSavingNew(false);
     }
+  };
+
+  const fmtDateTime = (s) => {
+    try { return new Date(s).toLocaleString(); } catch { return s; }
+  };
+
+  const loadPrescriptionsForSelected = async () => {
+    if (!selected) return;
+    setRxViewLoading(true);
+    try {
+      const token = localStorage.getItem('admintoken');
+      const res = await fetch('/api/prescriptions', { headers: token ? { Authorization: `Bearer ${token}` } : {} });
+      if (res.ok) {
+        const all = await res.json();
+        // Match by patient_uid or by contact/email fallbacks
+        const items = all.filter(r =>
+          (selected.patient_uid && r.patient_uid === selected.patient_uid) ||
+          (!!selected.contact && r.contact === selected.contact) ||
+          (!!selected.email && r.email === selected.email)
+        );
+        setRxList(items);
+      } else {
+        setRxList([]);
+      }
+    } catch {
+      setRxList([]);
+    } finally {
+      setRxViewLoading(false);
+    }
+  };
+
+  const openViewPrescriptions = () => {
+    setRxViewOpen(true);
+    loadPrescriptionsForSelected();
   };
 
   return (
@@ -369,10 +455,13 @@ export default function AdminAppointments() {
         <DialogContent dividers sx={{ overflowX: 'hidden' }}>
           {selected && !editingDetails && (
             <Stack spacing={1}>
-              {/* Buttons moved into modal body */}
-              <Stack direction="row" spacing={1}>
+              {/* Buttons in modal body */}
+              <Stack direction="row" spacing={1} useFlexGap flexWrap="wrap">
                 <Button size="small" variant="contained" onClick={openNewRxForAppointment}>
                   New prescription
+                </Button>
+                <Button size="small" variant="outlined" onClick={openViewPrescriptions}>
+                  View prescriptions
                 </Button>
                 <Button size="small" onClick={beginAddDetails} disabled={detailsLoading}>
                   {detailsLoading ? 'Loading…' : 'Add details'}
@@ -625,6 +714,7 @@ export default function AdminAppointments() {
                     minRows={2}
                     value={rxDietPlan[key]}
                     onChange={(e) => setRxDietPlan(p => ({ ...p, [key]: e.target.value }))}
+                    helperText={rxSuggesting[key] ? 'Generating suggestion…' : ' '}
                   />
                 ))}
                 {(() => {
@@ -634,7 +724,7 @@ export default function AdminAppointments() {
                       variant="outlined"
                       size="small"
                       sx={{ alignSelf: 'flex-start' }}
-                      onClick={() => setRxDietOpen(prev => [...prev, nextKey])}
+                      onClick={onClickHandler}
                     >
                       + {RX_DIET_LABELS[nextKey]}
                     </Button>
@@ -666,6 +756,33 @@ export default function AdminAppointments() {
           >
             {rxSavingNew ? 'Saving…' : 'Save'}
           </Button>
+        </DialogActions>
+      </Dialog>
+
+      {/* View prescriptions dialog */}
+      <Dialog open={rxViewOpen} onClose={() => setRxViewOpen(false)} fullWidth maxWidth="sm">
+        <DialogTitle>Prescriptions for {selected?.name || 'patient'}</DialogTitle>
+        <DialogContent dividers>
+          {rxViewLoading ? (
+            <Typography>Loading…</Typography>
+          ) : rxList.length === 0 ? (
+            <Typography>No prescriptions found.</Typography>
+          ) : (
+            <Stack spacing={1}>
+              {rxList.map((r) => (
+                <Paper key={r.id} variant="outlined" sx={{ p: 1 }}>
+                  <Typography variant="caption" sx={{ color: 'text.secondary' }}>
+                    {fmtDateTime(r.created_at)}
+                  </Typography>
+                  <Typography sx={{ whiteSpace: 'pre-wrap' }}>{r.content}</Typography>
+                </Paper>
+              ))}
+            </Stack>
+          )}
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={loadPrescriptionsForSelected} disabled={rxViewLoading}>Refresh</Button>
+          <Button onClick={() => setRxViewOpen(false)}>Close</Button>
         </DialogActions>
       </Dialog>
 
