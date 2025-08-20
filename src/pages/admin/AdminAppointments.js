@@ -31,6 +31,25 @@ export default function AdminAppointments() {
     goalTags: [], goalOther: ''   // ADD
   });
 
+  // New Prescription (diet-only) dialog state
+  const defaultDietPlanRx = { morning: '', midMorning: '', lunch: '', teaTime: '', evening: '', dinner: '', bedTime: '' };
+  const [rxNewOpen, setRxNewOpen] = useState(false);
+  const [rxSavingNew, setRxSavingNew] = useState(false);
+  const [rxDietPlan, setRxDietPlan] = useState(defaultDietPlanRx);
+
+  // NEW: progressive section state and labels for the appointment RX dialog
+  const RX_DIET_ORDER = ['morning', 'midMorning', 'lunch', 'teaTime', 'evening', 'dinner', 'bedTime'];
+  const RX_DIET_LABELS = {
+    morning: 'Morning',
+    midMorning: 'Mid-morning',
+    lunch: 'Lunch',
+    teaTime: 'Tea time',
+    evening: 'Evening',
+    dinner: 'Dinner',
+    bedTime: 'Bed time'
+  };
+  const [rxDietOpen, setRxDietOpen] = useState(['morning']);
+
   const load = async () => {
     const token = localStorage.getItem('admintoken');
     const res = await fetch('/api/appointments', { headers: token ? { Authorization: `Bearer ${token}` } : {} });
@@ -201,6 +220,60 @@ export default function AdminAppointments() {
     }
   };
 
+  const rxHasDiet = Object.values(rxDietPlan).some(v => String(v || '').trim().length > 0);
+  const rxBuildDietPlanText = (plan) => {
+    const sec = [];
+    if (plan.morning) sec.push(`Morning: ${plan.morning}`);
+    if (plan.midMorning) sec.push(`Mid-morning: ${plan.midMorning}`);
+    if (plan.lunch) sec.push(`Lunch: ${plan.lunch}`);
+    if (plan.teaTime) sec.push(`Tea time: ${plan.teaTime}`);
+    if (plan.evening) sec.push(`Evening: ${plan.evening}`);
+    if (plan.dinner) sec.push(`Dinner: ${plan.dinner}`);
+    if (plan.bedTime) sec.push(`Bed time: ${plan.bedTime}`);
+    return sec.length ? `Diet Plan\n${sec.join('\n')}` : '';
+  };
+
+  const openNewRxForAppointment = () => {
+    setRxDietPlan(defaultDietPlanRx);
+    setRxDietOpen(['morning']); // reset to only Morning visible
+    setRxNewOpen(true);
+  };
+
+  const saveNewRxForAppointment = async () => {
+    if (!selected) return;
+    const finalContent = rxBuildDietPlanText(rxDietPlan).trim();
+    if (!finalContent) return;
+
+    // Use contact/email as the patient key like other patient APIs
+    const patientKey = String(selected.contact || selected.email || '').trim();
+    if (!patientKey) {
+      // You can replace with a toast/snackbar if you have one
+      alert('Missing patient contact or email to attach prescription.');
+      return;
+    }
+
+    try {
+      setRxSavingNew(true);
+      // Ensure patient exists and get/generate an ID (optional but safe)
+      await fetch(`/api/patients/${encodeURIComponent(patientKey)}`);
+
+      // Create prescription for this patient (same as Add Prescription flow by patient)
+      const res = await fetch(`/api/patients/${encodeURIComponent(patientKey)}/prescriptions`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ content: finalContent })
+      });
+      if (res.ok) {
+        setRxNewOpen(false);
+        setRxDietPlan(defaultDietPlanRx);
+      }
+    } catch (e) {
+      console.error('Create prescription failed', e);
+    } finally {
+      setRxSavingNew(false);
+    }
+  };
+
   return (
     <div>
       <Typography variant="h5" gutterBottom>Appointments</Typography>
@@ -295,20 +368,33 @@ export default function AdminAppointments() {
 
         <DialogContent dividers sx={{ overflowX: 'hidden' }}>
           {selected && !editingDetails && (
-            <Stack spacing={0.75}>
-              <Typography><strong>Name:</strong> {selected.name}</Typography>
-              <Typography><strong>Contact:</strong> {selected.contact}</Typography>
-              {selected.email ? <Typography><strong>Email:</strong> {selected.email}</Typography> : null}
-              <Typography><strong>Date:</strong> {selected.date}</Typography>
-              <Typography><strong>Slot:</strong> {selected.slot}</Typography>
-              <Typography sx={{ color: 'text.secondary', fontSize: '0.8rem', wordBreak: 'break-all' }}>
-                ID: {selected.id}
-              </Typography>
-              {selected.patient_uid ? (
+            <Stack spacing={1}>
+              {/* Buttons moved into modal body */}
+              <Stack direction="row" spacing={1}>
+                <Button size="small" variant="contained" onClick={openNewRxForAppointment}>
+                  New prescription
+                </Button>
+                <Button size="small" onClick={beginAddDetails} disabled={detailsLoading}>
+                  {detailsLoading ? 'Loading…' : 'Add details'}
+                </Button>
+              </Stack>
+
+              {/* Existing appointment info */}
+              <Stack spacing={0.75}>
+                <Typography><strong>Name:</strong> {selected.name}</Typography>
+                <Typography><strong>Contact:</strong> {selected.contact}</Typography>
+                {selected.email ? <Typography><strong>Email:</strong> {selected.email}</Typography> : null}
+                <Typography><strong>Date:</strong> {selected.date}</Typography>
+                <Typography><strong>Slot:</strong> {selected.slot}</Typography>
                 <Typography sx={{ color: 'text.secondary', fontSize: '0.8rem', wordBreak: 'break-all' }}>
-                  Patient ID: {selected.patient_uid}
+                  ID: {selected.id}
                 </Typography>
-              ) : null}
+                {selected.patient_uid ? (
+                  <Typography sx={{ color: 'text.secondary', fontSize: '0.8rem', wordBreak: 'break-all' }}>
+                    Patient ID: {selected.patient_uid}
+                  </Typography>
+                ) : null}
+              </Stack>
             </Stack>
           )}
 
@@ -494,9 +580,7 @@ export default function AdminAppointments() {
         <DialogActions>
           {selected && !editingDetails && (
             <>
-              <Button onClick={beginAddDetails} disabled={detailsLoading}>
-                {detailsLoading ? 'Loading…' : 'Add details'}
-              </Button>
+              {/* Removed: New prescription and Add details from footer */}
               <Button
                 variant="contained"
                 onClick={() => confirmBySms(selected.id)}
@@ -519,6 +603,69 @@ export default function AdminAppointments() {
               </Button>
             </>
           )}
+        </DialogActions>
+      </Dialog>
+
+      {/* New prescription dialog (diet-only, same as Add Prescription UI) */}
+      <Dialog open={rxNewOpen} onClose={() => setRxNewOpen(false)} fullWidth maxWidth="sm">
+        <DialogTitle>New prescription for {selected?.name || 'patient'}</DialogTitle>
+        <DialogContent dividers>
+          <Grid container spacing={1.5}>
+            <Grid item xs={12}>
+              <Typography variant="subtitle1" sx={{ mt: 0.5, mb: 0.5, fontWeight: 600 }}>
+                Diet plan
+              </Typography>
+              <Stack spacing={1}>
+                {rxDietOpen.map((key) => (
+                  <TextField
+                    key={key}
+                    label={RX_DIET_LABELS[key]}
+                    fullWidth
+                    multiline
+                    minRows={2}
+                    value={rxDietPlan[key]}
+                    onChange={(e) => setRxDietPlan(p => ({ ...p, [key]: e.target.value }))}
+                  />
+                ))}
+                {(() => {
+                  const nextKey = RX_DIET_ORDER.find(k => !rxDietOpen.includes(k));
+                  return nextKey ? (
+                    <Button
+                      variant="outlined"
+                      size="small"
+                      sx={{ alignSelf: 'flex-start' }}
+                      onClick={() => setRxDietOpen(prev => [...prev, nextKey])}
+                    >
+                      + {RX_DIET_LABELS[nextKey]}
+                    </Button>
+                  ) : null;
+                })()}
+              </Stack>
+            </Grid>
+
+            <Grid item xs={12}>
+              <Box sx={{ mt: 1 }}>
+                <Typography variant="subtitle2" sx={{ mb: 0.5, color: 'text.secondary' }}>
+                  Preview
+                </Typography>
+                <Paper variant="outlined" sx={{ p: 1 }}>
+                  <Typography sx={{ whiteSpace: 'pre-wrap' }}>
+                    {rxBuildDietPlanText(rxDietPlan) || 'Fill the diet plan to see a preview.'}
+                  </Typography>
+                </Paper>
+              </Box>
+            </Grid>
+          </Grid>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={() => setRxNewOpen(false)} disabled={rxSavingNew}>Cancel</Button>
+          <Button
+            onClick={saveNewRxForAppointment}
+            variant="contained"
+            disabled={rxSavingNew || !rxHasDiet}
+          >
+            {rxSavingNew ? 'Saving…' : 'Save'}
+          </Button>
         </DialogActions>
       </Dialog>
 

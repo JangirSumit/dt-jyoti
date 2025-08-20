@@ -1,8 +1,8 @@
 import React, { useEffect, useState } from 'react';
 import {
-  Paper, Typography, Grid, TextField, Button, MenuItem, Select, InputLabel, FormControl,
+  Paper, Typography, Grid, TextField, Button,
   List, ListItem, ListItemText, ListItemSecondaryAction, IconButton, Divider,
-  Dialog, DialogTitle, DialogContent, DialogActions, Tooltip, Stack, Chip
+  Dialog, DialogTitle, DialogContent, DialogActions, Tooltip, Stack, Chip, Box
 } from '@mui/material';
 import DeleteIcon from '@mui/icons-material/Delete';
 import EditIcon from '@mui/icons-material/Edit';
@@ -17,13 +17,27 @@ function formatDate(d) {
 }
 
 export default function AdminPrescriptions() {
-  const [patients, setPatients] = useState([]);
   const [prescriptions, setPrescriptions] = useState([]);
   const [loading, setLoading] = useState(false);
 
   // New prescription
-  const [selectedPatient, setSelectedPatient] = useState('');
   const [content, setContent] = useState('');
+  // ADD: diet plan state
+  const defaultDietPlan = { morning: '', midMorning: '', lunch: '', teaTime: '', evening: '', dinner: '', bedTime: '' };
+  const [dietPlan, setDietPlan] = useState(defaultDietPlan);
+
+  // NEW: progressive section state and labels
+  const DIET_ORDER = ['morning', 'midMorning', 'lunch', 'teaTime', 'evening', 'dinner', 'bedTime'];
+  const DIET_LABELS = {
+    morning: 'Morning',
+    midMorning: 'Mid-morning',
+    lunch: 'Lunch',
+    teaTime: 'Tea time',
+    evening: 'Evening',
+    dinner: 'Dinner',
+    bedTime: 'Bed time'
+  };
+  const [dietOpen, setDietOpen] = useState(['morning']);
 
   // View/Edit dialog
   const [rxOpen, setRxOpen] = useState(false);
@@ -39,13 +53,6 @@ export default function AdminPrescriptions() {
   const tokenHeader = () => {
     const token = localStorage.getItem('admintoken');
     return token ? { Authorization: `Bearer ${token}` } : {};
-  };
-
-  const loadPatients = async () => {
-    try {
-      const res = await fetch('/api/patients', { headers: tokenHeader() });
-      if (res.ok) setPatients(await res.json());
-    } catch {}
   };
 
   const loadPrescriptions = async () => {
@@ -73,7 +80,6 @@ export default function AdminPrescriptions() {
   };
 
   useEffect(() => {
-    loadPatients();
     loadPrescriptions();
   }, []);
 
@@ -90,19 +96,41 @@ export default function AdminPrescriptions() {
     setRxContent('');
   };
 
-  // UPDATE: make submit usable from button (no event required)
+  const hasDiet = Object.values(dietPlan).some(v => String(v || '').trim().length > 0);
+  const buildDietPlanText = (plan) => {
+    const sec = [];
+    if (plan.morning) sec.push(`Morning: ${plan.morning}`);
+    if (plan.midMorning) sec.push(`Mid-morning: ${plan.midMorning}`);
+    if (plan.lunch) sec.push(`Lunch: ${plan.lunch}`);
+    if (plan.teaTime) sec.push(`Tea time: ${plan.teaTime}`);
+    if (plan.evening) sec.push(`Evening: ${plan.evening}`);
+    if (plan.dinner) sec.push(`Dinner: ${plan.dinner}`);
+    if (plan.bedTime) sec.push(`Bed time: ${plan.bedTime}`);
+    return sec.length ? `Diet Plan\n${sec.join('\n')}` : '';
+  };
+  const buildFinalContent = () => {
+    const note = content.trim();
+    const diet = buildDietPlanText(dietPlan).trim();
+    if (note && diet) return `${note}\n\n${diet}`;
+    return note || diet;
+  };
+
+  // Save new prescription (diet plan only)
   const saveNew = async (e) => {
     if (e?.preventDefault) e.preventDefault();
-    if (!selectedPatient || !content.trim()) return;
+    const finalContent = buildFinalContent(); // diet-only now
+    if (!finalContent) return;
     try {
       setSavingNew(true);
-      const res = await fetch(`/api/patients/${encodeURIComponent(selectedPatient)}/prescriptions`, {
+      // switched to a generic endpoint since patient selection is removed
+      const res = await fetch(`/api/prescriptions`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', ...tokenHeader() },
-        body: JSON.stringify({ content })
+        body: JSON.stringify({ content: finalContent })
       });
       if (res.ok) {
         setContent('');
+        setDietPlan(defaultDietPlan);
         await loadPrescriptions();
         setNewOpen(false);
       }
@@ -168,7 +196,7 @@ export default function AdminPrescriptions() {
             lineHeight: 1.2,
             borderRadius: 1.5
           }}
-          onClick={() => setNewOpen(true)}
+          onClick={() => { setDietOpen(['morning']); setNewOpen(true); }}
         >
           New prescription
         </Button>
@@ -235,46 +263,65 @@ export default function AdminPrescriptions() {
         )}
       </Paper>
 
-      {/* REMOVED: inline New prescription Paper form */}
-
       {/* New prescription dialog */}
       <Dialog open={newOpen} onClose={() => setNewOpen(false)} fullWidth maxWidth="sm">
         <DialogTitle>New prescription</DialogTitle>
         <DialogContent dividers>
           <Grid container spacing={1.5}>
-            <Grid item xs={12} md={6}>
-              <FormControl fullWidth>
-                <InputLabel id="patient-label">Patient</InputLabel>
-                <Select
-                  labelId="patient-label"
-                  label="Patient"
-                  value={selectedPatient}
-                  onChange={(e) => setSelectedPatient(e.target.value)}
-                >
-                  {patients.map(p => (
-                    <MenuItem key={p.id} value={p.id}>
-                      {p.name || 'Unnamed'} — {p.contact || p.email || ''}
-                    </MenuItem>
-                  ))}
-                </Select>
-              </FormControl>
-            </Grid>
             <Grid item xs={12}>
-              <TextField
-                label="Prescription"
-                value={content}
-                onChange={(e) => setContent(e.target.value)}
-                fullWidth
-                multiline
-                rows={10}
-                inputProps={{ style: { lineHeight: 1.35 } }}
-              />
+              <Typography variant="subtitle1" sx={{ mt: 0.5, mb: 0.5, fontWeight: 600 }}>
+                Diet plan
+              </Typography>
+              <Stack spacing={1}>
+                {dietOpen.map((key) => (
+                  <TextField
+                    key={key}
+                    label={DIET_LABELS[key]}
+                    fullWidth
+                    multiline
+                    minRows={2}
+                    value={dietPlan[key]}
+                    onChange={(e) => setDietPlan(p => ({ ...p, [key]: e.target.value }))}
+                  />
+                ))}
+                {(() => {
+                  const nextKey = DIET_ORDER.find(k => !dietOpen.includes(k));
+                  return nextKey ? (
+                    <Button
+                      variant="outlined"
+                      size="small"
+                      sx={{ alignSelf: 'flex-start' }}
+                      onClick={() => setDietOpen(prev => [...prev, nextKey])}
+                    >
+                      + {DIET_LABELS[nextKey]}
+                    </Button>
+                  ) : null;
+                })()}
+              </Stack>
+            </Grid>
+
+            {/* Preview */}
+            <Grid item xs={12}>
+              <Box sx={{ mt: 1 }}>
+                <Typography variant="subtitle2" sx={{ mb: 0.5, color: 'text.secondary' }}>
+                  Preview
+                </Typography>
+                <Paper variant="outlined" sx={{ p: 1 }}>
+                  <Typography sx={{ whiteSpace: 'pre-wrap' }}>
+                    {buildDietPlanText(dietPlan) || 'Fill the diet plan to see a preview.'}
+                  </Typography>
+                </Paper>
+              </Box>
             </Grid>
           </Grid>
         </DialogContent>
         <DialogActions>
           <Button onClick={() => setNewOpen(false)} disabled={savingNew}>Cancel</Button>
-          <Button onClick={saveNew} variant="contained" disabled={savingNew || !selectedPatient || !content.trim()}>
+          <Button
+            onClick={saveNew}
+            variant="contained"
+            disabled={savingNew || !hasDiet}
+          >
             {savingNew ? 'Saving…' : 'Save'}
           </Button>
         </DialogActions>
