@@ -68,7 +68,8 @@ router.get('/:id', async (req, res) => {
 
     let p = await db.get(
       `SELECT id, name, contact, email, conditions, goal, notes,
-              height_cm, weight_kg, age, sex, activity, diet_pref, allergies, patient_uid
+              height_cm, weight_kg, age, sex, activity, diet_pref, allergies, patient_uid,
+              goal_tags, goal_notes
          FROM patients WHERE id = ?`,
       id
     );
@@ -103,7 +104,8 @@ router.get('/:id', async (req, res) => {
       sex: p?.sex ?? '',
       activity: p?.activity ?? '',
       diet_pref: p?.diet_pref ?? '',
-      goal: p?.goal || '',
+      goalTags: p?.goal_tags ? JSON.parse(p.goal_tags) : [],
+      goalNotes: typeof p?.goal_notes === 'string' ? p.goal_notes : (p?.goal || ''),
       notes: p?.notes || '',
       name: p?.name || '',
       contact: p?.contact || '',
@@ -143,6 +145,8 @@ router.put('/:id/meta', async (req, res) => {
     const height_cm = b.height_cm === '' || b.height_cm == null ? null : Number(b.height_cm);
     const weight_kg = b.weight_kg === '' || b.weight_kg == null ? null : Number(b.weight_kg);
     const age = b.age === '' || b.age == null ? null : parseInt(b.age, 10);
+    const goalTags = Array.isArray(b.goalTags) ? b.goalTags.filter(Boolean) : [];
+    const goalNotes = typeof b.goalNotes === 'string' ? b.goalNotes.trim() : '';
 
     await db.run(
       `UPDATE patients
@@ -157,11 +161,17 @@ router.put('/:id/meta', async (req, res) => {
              sex = ?,
              activity = ?,
              diet_pref = ?,
+             goal_tags = ?,            -- NEW
+             goal_notes = ?,           -- NEW
+             goal = ?,                 -- keep legacy mirror of notes
              updated_at = ?
        WHERE id = ?`,
       b.name || null, b.contact || null, b.email || null,
       JSON.stringify(conditions), JSON.stringify(allergies),
       height_cm, weight_kg, age, b.sex || '', b.activity || '', b.diet_pref || '',
+      JSON.stringify(goalTags),
+      goalNotes,
+      goalNotes,
       now, id
     );
 

@@ -100,9 +100,20 @@ async function init() {
     updated_at TEXT
   )`);
 
-  // Safe ALTERs if table already exists
+  // Safe ALTERs for older DBs
   const alter = async (col, def) => { try { await run(`ALTER TABLE patients ADD COLUMN ${col} ${def}`); } catch {} };
+  await alter('goal', 'TEXT');        // legacy
+  await alter('notes', 'TEXT');       // optional
+  await alter('height_cm', 'REAL');
+  await alter('weight_kg', 'REAL');
+  await alter('age', 'INTEGER');
+  await alter('sex', 'TEXT');
+  await alter('activity', 'TEXT');
+  await alter('diet_pref', 'TEXT');
+  await alter('allergies', 'TEXT');
   await alter('patient_uid', 'TEXT');
+  await alter('goal_tags', 'TEXT');   // NEW: JSON array
+  await alter('goal_notes', 'TEXT');  // NEW: text notes
 
   // Helpful index
   await run(`CREATE UNIQUE INDEX IF NOT EXISTS idx_patients_uid ON patients(patient_uid)`);

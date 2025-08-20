@@ -124,7 +124,7 @@ router.get('/', async (_req, res) => {
 
 router.post('/', async (req, res) => {
   try {
-    const { name, contact, date, slot, email, otpToken } = req.body || {};
+    const { name, contact, date, slot, email, otpToken, patient_uid } = req.body || {};
     if (!name || !contact || !date || !slot) {
       return res.status(400).json({ error: 'name, contact, date, slot are required' });
     }
@@ -153,8 +153,12 @@ router.post('/', async (req, res) => {
     const existing = await db.get('SELECT 1 FROM appointments WHERE date = ? AND slot = ? LIMIT 1', date, slot);
     if (existing) return res.status(409).json({ error: 'Slot already booked' });
 
-    const appt = { id: uuidv4(), name, contact, date, slot, email: email || '' };
-    await db.run('INSERT INTO appointments (id,name,contact,email,date,slot) VALUES (?,?,?,?,?,?)', appt.id, appt.name, appt.contact, appt.email, appt.date, appt.slot);
+    const appt = { id: uuidv4(), name, contact, date, slot, email: email || '', patient_uid };
+    await db.run(
+      `INSERT INTO appointments (id, name, contact, email, date, slot, patient_uid)
+       VALUES (?,?,?,?,?,?,?)`,
+      appt.id, appt.name, appt.contact, appt.email, appt.date, appt.slot, appt.patient_uid || null
+    );
 
     try {
       const transporter = getTransporter();

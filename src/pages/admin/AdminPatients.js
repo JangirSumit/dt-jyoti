@@ -16,6 +16,8 @@ const SEX_TAGS = ['Female', 'Male', 'Other'];
 const ACTIVITY_TAGS = ['Sedentary', 'Light', 'Moderate', 'Active', 'Athlete'];
 const DIET_TAGS = ['Veg', 'Non-veg', 'Vegan', 'Jain', 'Eggetarian'];
 const ALLERGY_TAGS = ['Milk', 'Peanut', 'Soy', 'Gluten', 'Shellfish', 'Egg', 'Tree nuts'];
+// ADD: Goals quick-picks
+const GOAL_TAGS = ['Weight loss','Weight gain','Muscle gain','Diabetes control','Cholesterol management','Thyroid management','PCOS management','Digestive health','General wellness','Postpartum nutrition'];
 
 function parseDate(d) {
   const [y, m, day] = (d || '').split('-').map(Number);
@@ -32,8 +34,8 @@ export default function AdminPatients() {
     conditions: [],
     height_cm: '', weight_kg: '', age: '',
     sex: '', activity: '', diet_pref: '',
-    allergies: [],
-    patientId: '' // ADD
+    allergies: [], patientId: '',
+    goalTags: [], goalOther: '' // goalOther will map to goalNotes
   });
   const [loadingMeta, setLoadingMeta] = useState(false);
   const [savingMeta, setSavingMeta] = useState(false);
@@ -66,18 +68,22 @@ export default function AdminPatients() {
             activity: data.activity ?? '',
             diet_pref: data.diet_pref ?? '',
             allergies: Array.isArray(data.allergies) ? data.allergies : [],
-            patientId: data.patientId || ''
+            patientId: data.patientId || '',
+            goalTags: Array.isArray(data.goalTags) ? data.goalTags : [],
+            goalOther: data.goalNotes || '' // from server separate field
           });
         } else {
           setPatientMeta({
             conditions: [], height_cm: '', weight_kg: '', age: '',
-            sex: '', activity: '', diet_pref: '', allergies: [], patientId: ''
+            sex: '', activity: '', diet_pref: '', allergies: [], patientId: '',
+            goalTags: [], goalOther: ''
           });
         }
       } catch {
         setPatientMeta({
           conditions: [], height_cm: '', weight_kg: '', age: '',
-          sex: '', activity: '', diet_pref: '', allergies: [], patientId: ''
+          sex: '', activity: '', diet_pref: '', allergies: [], patientId: '',
+          goalTags: [], goalOther: ''
         });
       } finally {
         setLoadingMeta(false);
@@ -104,26 +110,33 @@ export default function AdminPatients() {
       return { ...prev, [field]: Array.from(set) };
     });
   };
+  // Optional helper for goals (or use toggleMulti('goalTags', tag))
+  const toggleGoal = (tag) => toggleMulti('goalTags', tag);
 
   const saveMeta = async () => {
     if (!selected) return;
     setSavingMeta(true);
     try {
       const token = localStorage.getItem('admintoken');
-      const res = await fetch(`/api/patients/${encodeURIComponent(selected.key)}/meta`, {
+      // Build payload and merge goals
+      const payload = {
+        conditions: patientMeta.conditions,
+        height_cm: patientMeta.height_cm,
+        weight_kg: patientMeta.weight_kg,
+        age: patientMeta.age,
+        sex: patientMeta.sex,
+        activity: patientMeta.activity,
+        diet_pref: patientMeta.diet_pref,
+        allergies: patientMeta.allergies,
+        goalTags: patientMeta.goalTags,
+        goalNotes: patientMeta.goalOther, // send separately
+        name: selected.name, contact: selected.contact, email: selected.email
+      };
+      await fetch(`/api/patients/${encodeURIComponent(selected.key)}/meta`, {
         method: 'PUT',
-        headers: {
-          'Content-Type': 'application/json',
-          ...(token ? { Authorization: `Bearer ${token}` } : {})
-        },
-        body: JSON.stringify({
-          ...patientMeta,
-          name: selected.name,
-          contact: selected.contact,
-          email: selected.email
-        })
+        headers: { 'Content-Type': 'application/json', ...(token ? { Authorization: `Bearer ${token}` } : {}) },
+        body: JSON.stringify(payload)
       });
-      if (!res.ok) throw new Error('save failed');
     } catch (e) {
       console.error('Save meta failed', e);
     } finally {
@@ -394,6 +407,36 @@ export default function AdminPatients() {
                 <Typography sx={{ mt: 1, color: 'text.secondary' }}>
                   BMI: {bmiText}
                 </Typography>
+              </Box>
+
+              {/* ADD: Goals */}
+              <Box>
+                <Typography sx={{ fontWeight: 600, mb: 1 }}>Goals (select and/or type)</Typography>
+                <Stack direction="row" spacing={1} useFlexGap flexWrap="wrap">
+                  {GOAL_TAGS.map(t => {
+                    const on = (patientMeta.goalTags || []).includes(t);
+                    return (
+                      <Chip
+                        key={t}
+                        label={t}
+                        color={on ? 'primary' : 'default'}
+                        variant={on ? 'filled' : 'outlined'}
+                        onClick={() => toggleGoal(t)}
+                        sx={{ mb: 1 }}
+                      />
+                    );
+                  })}
+                </Stack>
+                <TextField
+                  label="Additional goal/notes"
+                  placeholder="e.g., target 5kg loss in 3 months, improve energy"
+                  fullWidth
+                  size="small"
+                  multiline
+                  minRows={2}
+                  value={patientMeta.goalOther}
+                  onChange={(e) => setPatientMeta(prev => ({ ...prev, goalOther: e.target.value }))}
+                />
               </Box>
 
               {/* Appointment history */}

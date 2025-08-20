@@ -1,12 +1,35 @@
 import React, { useEffect, useState } from 'react';
-import { Paper, Typography, IconButton, Grid, Dialog, DialogTitle, DialogContent, DialogActions, Button, Stack, Box, Chip } from '@mui/material';
+import { Paper, Typography, IconButton, Grid, Dialog, DialogTitle, DialogContent, DialogActions, Button, Stack, Box, Chip, TextField, InputAdornment, Tooltip } from '@mui/material';
 import DeleteIcon from '@mui/icons-material/Delete';
 import CloseIcon from '@mui/icons-material/Close';
+
+const CONDITION_TAGS = [
+  'Diabetes','Hypertension','PCOS','Hypothyroid','Hyperthyroid','Obesity',
+  'Anemia','High Cholesterol','Fatty Liver','GERD','IBS','Gout','Arthritis',
+  'Migraine','Kidney Stone','Pregnancy','Postpartum'
+];
+const SEX_TAGS = ['Female','Male','Other'];
+const ACTIVITY_TAGS = ['Sedentary','Light','Moderate','Active','Athlete'];
+const DIET_TAGS = ['Veg','Non-veg','Vegan','Jain','Eggetarian'];
+const ALLERGY_TAGS = ['Milk','Peanut','Soy','Gluten','Shellfish','Egg','Tree nuts'];
+const GOAL_TAGS = ['Weight loss','Weight gain','Muscle gain','Diabetes control','Cholesterol management','Thyroid management','PCOS management','Digestive health','General wellness','Postpartum nutrition'];
 
 export default function AdminAppointments() {
   const [appointments, setAppointments] = useState([]);
   const [selected, setSelected] = useState(null);
-  const [confirming, setConfirming] = useState(false); // ADD
+  const [confirming, setConfirming] = useState(false);
+
+  // Patient details editing inside modal
+  const [editingDetails, setEditingDetails] = useState(false);
+  const [detailsLoading, setDetailsLoading] = useState(false);
+  const [savingDetails, setSavingDetails] = useState(false);
+  const [details, setDetails] = useState({
+    name: '', contact: '', email: '',
+    height_cm: '', weight_kg: '', age: '',
+    sex: '', activity: '', diet_pref: '',
+    allergies: [], conditions: [],
+    goalTags: [], goalOther: ''   // ADD
+  });
 
   const load = async () => {
     const token = localStorage.getItem('admintoken');
@@ -22,10 +45,16 @@ export default function AdminAppointments() {
     if (selected?.id === id) setSelected(null);
   };
 
-  const openDetails = (a) => setSelected(a);
-  const closeDetails = () => setSelected(null);
+  const openDetails = (a) => {
+    setSelected(a);
+    setEditingDetails(false);
+  };
+  const closeDetails = () => {
+    setSelected(null);
+    setEditingDetails(false);
+  };
 
-  const confirmBySms = async (id) => { // ADD
+  const confirmBySms = async (id) => {
     try {
       setConfirming(true);
       const token = localStorage.getItem('admintoken');
@@ -37,11 +66,138 @@ export default function AdminAppointments() {
         }
       });
       if (!res.ok) throw new Error('Failed');
-      // optional: show a toast/snackbar
     } catch (e) {
       console.error('Confirm SMS failed');
     } finally {
       setConfirming(false);
+    }
+  };
+
+  const toggleArray = (field, val) => {
+    setDetails(b => {
+      const set = new Set(b[field] || []);
+      set.has(val) ? set.delete(val) : set.add(val);
+      return { ...b, [field]: Array.from(set) };
+    });
+  };
+  const toggleGoal = (tag) => {                 // ADD
+    setDetails(b => {
+      const set = new Set(b.goalTags || []);
+      set.has(tag) ? set.delete(tag) : set.add(tag);
+      return { ...b, goalTags: Array.from(set) };
+    });
+  };
+
+  const beginAddDetails = async () => {
+    if (!selected) return;
+    setDetailsLoading(true);
+    try {
+      // Prefill from appointment
+      const base = {
+        name: selected.name || '',
+        contact: selected.contact || '',
+        email: selected.email || '',
+        height_cm: '', weight_kg: '', age: '',
+        sex: '', activity: '', diet_pref: '',
+        allergies: [], conditions: []
+      };
+
+      // Load existing patient meta using contact/email as key
+      const patientKey = (selected.contact || selected.email || '').trim();
+      if (patientKey) {
+        const token = localStorage.getItem('admintoken');
+        const res = await fetch(`/api/patients/${encodeURIComponent(patientKey)}`, {
+          headers: token ? { Authorization: `Bearer ${token}` } : {}
+        });
+        if (res.ok) {
+          const data = await res.json();
+          setDetails({
+            ...base,
+            name: data.name || base.name,
+            contact: data.contact || base.contact,
+            email: data.email || base.email,
+            conditions: Array.isArray(data.conditions) ? data.conditions : [],
+            height_cm: data.height_cm ?? '',
+            weight_kg: data.weight_kg ?? '',
+            age: data.age ?? '',
+            sex: data.sex ?? '',
+            activity: data.activity ?? '',
+            diet_pref: data.diet_pref ?? '',
+            allergies: Array.isArray(data.allergies) ? data.allergies : [],
+            goalTags: Array.isArray(data.goalTags) ? data.goalTags : [],
+            goalOther: data.goalNotes || data.goal || '' // fallback to legacy
+          });
+        } else {
+          setDetails({ ...base, goalTags: [], goalOther: '' });
+        }
+      } else {
+        setDetails({ ...base, goalTags: [], goalOther: '' });
+      }
+      setEditingDetails(true);
+    } catch (e) {
+      console.error('Load patient details failed', e);
+    } finally {
+      setDetailsLoading(false);
+    }
+  };
+
+  const savePatientDetails = async () => {
+    if (!selected) return;
+    const patientKey = (details.contact || details.email || '').trim();
+    if (!patientKey) {
+      console.error('Missing patient key (contact or email)');
+      return;
+    }
+
+    setSavingDetails(true);
+    try {
+      // Ensure/get patientId
+      const pRes = await fetch(`/api/patients/${encodeURIComponent(patientKey)}`);
+      if (!pRes.ok) throw new Error('patient fetch failed');
+      const pData = await pRes.json();
+      const patientId = pData.patientId;
+
+      // Save meta
+      const putRes = await fetch(`/api/patients/${encodeURIComponent(patientKey)}/meta`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          name: details.name,
+          contact: details.contact,
+          email: details.email,
+          conditions: details.conditions,
+          height_cm: details.height_cm,
+          weight_kg: details.weight_kg,
+          age: details.age,
+          sex: details.sex,
+          activity: details.activity,
+          diet_pref: details.diet_pref,
+          allergies: details.allergies,
+          goalTags: details.goalTags,
+          goalNotes: details.goalOther
+        })
+      });
+      if (!putRes.ok) throw new Error('meta save failed');
+
+      // Best-effort link appointment to patientId if backend supports it
+      try {
+        await fetch(`/api/appointments/${selected.id}`, {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ patient_uid: patientId })
+        });
+      } catch {}
+
+      // Update UI selection/collection
+      setAppointments((list) =>
+        list.map((a) => (a.id === selected.id ? { ...a, patient_uid: patientId } : a))
+      );
+      setSelected((prev) => (prev ? { ...prev, patient_uid: patientId } : prev));
+      setEditingDetails(false);
+    } catch (e) {
+      console.error('Save patient details failed', e);
+    } finally {
+      setSavingDetails(false);
     }
   };
 
@@ -78,6 +234,16 @@ export default function AdminAppointments() {
                       variant="outlined"
                       sx={{ ml: 1, verticalAlign: 'middle' }}
                     />
+                  ) : null}
+                  {a.patient_uid ? (
+                    <Tooltip title="Linked patient ID">
+                      <Chip
+                        label={a.patient_uid}
+                        size="small"
+                        variant="outlined"
+                        sx={{ ml: 1, verticalAlign: 'middle' }}
+                      />
+                    </Tooltip>
                   ) : null}
                 </Typography>
               </Grid>
@@ -127,8 +293,8 @@ export default function AdminAppointments() {
           </IconButton>
         </DialogTitle>
 
-        <DialogContent dividers sx={{ overflowX: 'hidden' }}> {/* hide horizontal scroll */}
-          {selected && (
+        <DialogContent dividers sx={{ overflowX: 'hidden' }}>
+          {selected && !editingDetails && (
             <Stack spacing={0.75}>
               <Typography><strong>Name:</strong> {selected.name}</Typography>
               <Typography><strong>Contact:</strong> {selected.contact}</Typography>
@@ -138,12 +304,199 @@ export default function AdminAppointments() {
               <Typography sx={{ color: 'text.secondary', fontSize: '0.8rem', wordBreak: 'break-all' }}>
                 ID: {selected.id}
               </Typography>
+              {selected.patient_uid ? (
+                <Typography sx={{ color: 'text.secondary', fontSize: '0.8rem', wordBreak: 'break-all' }}>
+                  Patient ID: {selected.patient_uid}
+                </Typography>
+              ) : null}
+            </Stack>
+          )}
+
+          {selected && editingDetails && (
+            <Stack spacing={1.5}>
+              {detailsLoading ? <Typography>Loading…</Typography> : null}
+              <Stack spacing={0.5}>
+                <Typography sx={{ fontWeight: 600, mb: 0.5 }}>Patient</Typography>
+                <Grid container spacing={1.5}>
+                  <Grid item xs={12} sm={6}>
+                    <TextField
+                      label="Name"
+                      fullWidth
+                      size="small"
+                      value={details.name}
+                      onChange={e => setDetails(b => ({ ...b, name: e.target.value }))}
+                    />
+                  </Grid>
+                  <Grid item xs={12} sm={6}>
+                    <TextField
+                      label="Contact"
+                      fullWidth
+                      size="small"
+                      value={details.contact}
+                      onChange={e => setDetails(b => ({ ...b, contact: e.target.value }))}
+                    />
+                  </Grid>
+                  <Grid item xs={12}>
+                    <TextField
+                      label="Email"
+                      fullWidth
+                      size="small"
+                      value={details.email}
+                      onChange={e => setDetails(b => ({ ...b, email: e.target.value }))}
+                    />
+                  </Grid>
+                </Grid>
+              </Stack>
+
+              {/* Height/Weight/Age */}
+              <Grid container spacing={1.5}>
+                <Grid item xs={12} sm={4}>
+                  <TextField
+                    label="Height" size="small" fullWidth type="number"
+                    value={details.height_cm}
+                    onChange={e => setDetails(b => ({ ...b, height_cm: e.target.value }))}
+                    InputProps={{ endAdornment: <InputAdornment position="end">cm</InputAdornment> }}
+                  />
+                </Grid>
+                <Grid item xs={12} sm={4}>
+                  <TextField
+                    label="Weight" size="small" fullWidth type="number"
+                    value={details.weight_kg}
+                    onChange={e => setDetails(b => ({ ...b, weight_kg: e.target.value }))}
+                    InputProps={{ endAdornment: <InputAdornment position="end">kg</InputAdornment> }}
+                  />
+                </Grid>
+                <Grid item xs={12} sm={4}>
+                  <TextField
+                    label="Age" size="small" fullWidth type="number"
+                    value={details.age}
+                    onChange={e => setDetails(b => ({ ...b, age: e.target.value }))}
+                    InputProps={{ endAdornment: <InputAdornment position="end">yrs</InputAdornment> }}
+                  />
+                </Grid>
+              </Grid>
+
+              {/* Sex */}
+              <Box>
+                <Typography sx={{ fontWeight: 600, mb: 1 }}>Sex</Typography>
+                <Stack direction="row" spacing={1} useFlexGap flexWrap="wrap">
+                  {SEX_TAGS.map(t => (
+                    <Chip key={t}
+                      label={t}
+                      color={details.sex === t ? 'primary' : 'default'}
+                      variant={details.sex === t ? 'filled' : 'outlined'}
+                      onClick={() => setDetails(b => ({ ...b, sex: b.sex === t ? '' : t }))}
+                    />
+                  ))}
+                </Stack>
+              </Box>
+
+              {/* Activity */}
+              <Box>
+                <Typography sx={{ fontWeight: 600, mb: 1 }}>Activity</Typography>
+                <Stack direction="row" spacing={1} useFlexGap flexWrap="wrap">
+                  {ACTIVITY_TAGS.map(t => (
+                    <Chip key={t}
+                      label={t}
+                      color={details.activity === t ? 'primary' : 'default'}
+                      variant={details.activity === t ? 'filled' : 'outlined'}
+                      onClick={() => setDetails(b => ({ ...b, activity: b.activity === t ? '' : t }))}
+                    />
+                  ))}
+                </Stack>
+              </Box>
+
+              {/* Diet preference */}
+              <Box>
+                <Typography sx={{ fontWeight: 600, mb: 1 }}>Diet preference</Typography>
+                <Stack direction="row" spacing={1} useFlexGap flexWrap="wrap">
+                  {DIET_TAGS.map(t => (
+                    <Chip key={t}
+                      label={t}
+                      color={details.diet_pref === t ? 'primary' : 'default'}
+                      variant={details.diet_pref === t ? 'filled' : 'outlined'}
+                      onClick={() => setDetails(b => ({ ...b, diet_pref: b.diet_pref === t ? '' : t }))}
+                    />
+                  ))}
+                </Stack>
+              </Box>
+
+              {/* Allergies */}
+              <Box>
+                <Typography sx={{ fontWeight: 600, mb: 1 }}>Allergies</Typography>
+                <Stack direction="row" spacing={1} useFlexGap flexWrap="wrap">
+                  {ALLERGY_TAGS.map(t => {
+                    const on = (details.allergies || []).includes(t);
+                    return (
+                      <Chip key={t}
+                        label={t}
+                        color={on ? 'primary' : 'default'}
+                        variant={on ? 'filled' : 'outlined'}
+                        onClick={() => toggleArray('allergies', t)}
+                      />
+                    );
+                  })}
+                </Stack>
+              </Box>
+
+              {/* Diagnosis */}
+              <Box>
+                <Typography sx={{ fontWeight: 600, mb: 1 }}>Diagnosis</Typography>
+                <Stack direction="row" spacing={1} useFlexGap flexWrap="wrap">
+                  {CONDITION_TAGS.map(t => {
+                    const on = (details.conditions || []).includes(t);
+                    return (
+                      <Chip key={t}
+                        label={t}
+                        color={on ? 'primary' : 'default'}
+                        variant={on ? 'filled' : 'outlined'}
+                        onClick={() => toggleArray('conditions', t)}
+                      />
+                    );
+                  })}
+                </Stack>
+              </Box>
+
+              {/* Goals */}
+              <Box>
+                <Typography sx={{ fontWeight: 600, mb: 1 }}>Goals (select and/or type)</Typography>
+                <Stack direction="row" spacing={1} useFlexGap flexWrap="wrap">
+                  {GOAL_TAGS.map(t => {
+                    const on = (details.goalTags || []).includes(t);
+                    return (
+                      <Chip
+                        key={t}
+                        label={t}
+                        color={on ? 'primary' : 'default'}
+                        variant={on ? 'filled' : 'outlined'}
+                        onClick={() => toggleGoal(t)}
+                        sx={{ mb: 1 }}
+                      />
+                    );
+                  })}
+                </Stack>
+                <TextField
+                  label="Additional goal/notes"
+                  placeholder="e.g., target 5kg loss in 3 months, improve energy"
+                  fullWidth
+                  size="small"
+                  multiline
+                  minRows={2}
+                  value={details.goalOther}
+                  onChange={e => setDetails(b => ({ ...b, goalOther: e.target.value }))}
+                />
+              </Box>
+
             </Stack>
           )}
         </DialogContent>
+
         <DialogActions>
-          {selected && (
+          {selected && !editingDetails && (
             <>
+              <Button onClick={beginAddDetails} disabled={detailsLoading}>
+                {detailsLoading ? 'Loading…' : 'Add details'}
+              </Button>
               <Button
                 variant="contained"
                 onClick={() => confirmBySms(selected.id)}
@@ -156,8 +509,20 @@ export default function AdminAppointments() {
               </Button>
             </>
           )}
+          {selected && editingDetails && (
+            <>
+              <Button onClick={() => setEditingDetails(false)} disabled={savingDetails}>
+                Cancel
+              </Button>
+              <Button variant="contained" onClick={savePatientDetails} disabled={savingDetails}>
+                {savingDetails ? 'Saving…' : 'Save'}
+              </Button>
+            </>
+          )}
         </DialogActions>
       </Dialog>
+
+      {/* Removed: New Appointment form from main screen */}
     </div>
   );
 }
