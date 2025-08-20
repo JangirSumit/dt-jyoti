@@ -8,6 +8,7 @@ const { init } = require('./db');
 const { appointmentsRouter } = require('./routes/appointments');
 const { otpRouter } = require('./routes/otp');
 const { paymentsRouter } = require('./routes/payments'); // ADD
+const { patientsRouter } = require('./routes/patients'); // ADD
 
 (async () => {
   await init();
@@ -46,9 +47,13 @@ const { paymentsRouter } = require('./routes/payments'); // ADD
     console.error('Missing Twilio env. Check server/.env');
   }
 
+  app.use('/api/payments', paymentsRouter);
+
+  app.use(express.json());
+
   app.use('/api/appointments', appointmentsRouter);
   app.use('/api/otp', otpRouter);
-  app.use('/api/payments', paymentsRouter); // ADD
+  app.use('/api/patients', patientsRouter); // ensure mounted
 
   const port = Number(process.env.PORT || 4000);
   console.log('[Twilio configured]', {

@@ -78,6 +78,34 @@ async function init() {
     created_at TEXT NOT NULL,
     expires_at TEXT NOT NULL
   )`);
+
+  // Patients table to store per-patient meta (conditions/goals/notes later)
+  await run(`CREATE TABLE IF NOT EXISTS patients (
+    id TEXT PRIMARY KEY,            -- existing key (contact/email)
+    name TEXT,
+    contact TEXT,
+    email TEXT,
+    conditions TEXT,
+    goal TEXT,
+    notes TEXT,
+    height_cm REAL,
+    weight_kg REAL,
+    age INTEGER,
+    sex TEXT,
+    activity TEXT,
+    diet_pref TEXT,
+    allergies TEXT,
+    patient_uid TEXT,               -- NEW: stable unique ID
+    created_at TEXT NOT NULL DEFAULT (strftime('%Y-%m-%dT%H:%M:%fZ','now')),
+    updated_at TEXT
+  )`);
+
+  // Safe ALTERs if table already exists
+  const alter = async (col, def) => { try { await run(`ALTER TABLE patients ADD COLUMN ${col} ${def}`); } catch {} };
+  await alter('patient_uid', 'TEXT');
+
+  // Helpful index
+  await run(`CREATE UNIQUE INDEX IF NOT EXISTS idx_patients_uid ON patients(patient_uid)`);
 }
 
 function getDb() {
