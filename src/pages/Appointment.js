@@ -130,7 +130,7 @@ export default function Appointment() {
 
   return (
     <>
-  <SEO title="Book Appointment – Dietitian Jyoti" description="See available slots and book your consultation online in seconds." canonical="/appointment" image="/images/banner-appointment.svg" />
+  <SEO title="Book Appointment – GoNutriMind" description="See available slots and book your consultation online in seconds." canonical="/appointment" image="/images/banner-appointment.svg" />
     <Banner src="/images/banner-appointment.svg" alt="Appointment banner" />
   <Section>
   <Paper sx={{ p: { xs: 2, md: 3 }, borderRadius: 3, boxShadow: 2 }}>

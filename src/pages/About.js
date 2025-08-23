@@ -7,7 +7,7 @@ import CheckCircleIcon from '@mui/icons-material/CheckCircle';
 import Section from '../components/Section';
 
 export default function About() {
-  useDocumentTitle('About');
+  useDocumentTitle('Our Team');
   const revealRef = useRef([]);
   useEffect(() => {
     const els = revealRef.current.filter(Boolean);
@@ -25,9 +25,9 @@ export default function About() {
   }, []);
   return (
     <>
-      <SEO title="About – Dietitian Jyoti" description="Clinical dietitian with 7+ years of experience. Personalized, practical, and evidence-based nutrition care." canonical="/about" image="/images/banner-about.svg" />
+  <SEO title="Our Team – GoNutriMind" description="Meet the GoNutriMind team — clinicians and nutrition experts delivering practical, evidence-based care." canonical="/about" image="/images/banner-about.svg" />
 
-      {/* Hero */}
+  {/* Hero */}
       <Section>
       <Paper className="reveal" ref={(el) => (revealRef.current[0] = el)} sx={{
         p: { xs: 3, md: 5 },
@@ -40,13 +40,13 @@ export default function About() {
           <Box className="float-y-1" sx={{ position: 'absolute', top: -24, left: -24, width: 140, height: 140, borderRadius: '50%', filter: 'blur(26px)', background: 'radial-gradient(circle, rgba(76,175,80,.25), transparent 60%)' }} />
           <Box className="float-y-2" sx={{ position: 'absolute', bottom: -28, right: -28, width: 160, height: 160, borderRadius: '50%', filter: 'blur(28px)', background: 'radial-gradient(circle, rgba(33,150,243,.22), transparent 60%)' }} />
         </Box>
-        <Grid container spacing={3} alignItems="center">
+  <Grid container spacing={3} alignItems="center">
           <Grid item xs={12} md={7}>
             <Stack spacing={1.5}>
-              <Typography variant="overline" color="text.secondary">Dietitian & Nutritionist</Typography>
-              <Typography variant="h3" sx={{ fontWeight: 800, lineHeight: 1.1 }}>Dt. Jyoti Jangid</Typography>
+              <Typography variant="overline" color="text.secondary">About Us</Typography>
+              <Typography variant="h3" sx={{ fontWeight: 800, lineHeight: 1.1 }}>GoNutriMind Team</Typography>
               <Typography variant="h6" color="text.secondary">
-                I help you build sustainable nutrition habits with practical, culturally relevant plans—grounded in clinical nutrition.
+                GoNutriMind brings together clinical nutrition and practical guidance to help you build sustainable nutrition habits.
               </Typography>
               <Stack direction="row" spacing={1} flexWrap="wrap">
                 <Chip label="Evidence‑based" color="success" size="small" variant="outlined" />
@@ -61,7 +61,7 @@ export default function About() {
           </Grid>
           <Grid item xs={12} md={5}>
             <Stack alignItems="center" spacing={2}>
-              <Avatar src="/images/humans/dietitian.svg" alt="Dt. Jyoti" sx={{ width: 140, height: 140, border: '4px solid #fff', boxShadow: 2 }} />
+              <Avatar src="/images/humans/dietitian.svg" alt="GoNutriMind team" sx={{ width: 140, height: 140, border: '4px solid #fff', boxShadow: 2 }} />
               <Stack direction="row" spacing={1}>
                 <Tooltip title="Years of practice"><Chip label="7+ yrs" /></Tooltip>
                 <Tooltip title="Clients served"><Chip label="1000+ clients" /></Tooltip>
@@ -71,6 +71,46 @@ export default function About() {
           </Grid>
         </Grid>
   </Paper>
+  </Section>
+
+  {/* Team members */}
+  <Section>
+    <Typography variant="h4" sx={{ mt: 4, mb: 2, fontWeight: 800 }}>Our Team</Typography>
+    <Grid container spacing={3}>
+      <Grid item xs={12} md={4}>
+        <Card elevation={2} sx={{ borderRadius: 3 }}>
+          <CardContent sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+            <Avatar src="/images/humans/dietitian.svg" alt="Dietitian Jyoti" sx={{ width: 80, height: 80 }} />
+            <Box>
+              <Typography sx={{ fontWeight: 800 }}>Dietitian Jyoti</Typography>
+              <Typography color="text.secondary">Clinical Dietitian</Typography>
+            </Box>
+          </CardContent>
+        </Card>
+      </Grid>
+      <Grid item xs={12} md={4}>
+        <Card elevation={2} sx={{ borderRadius: 3 }}>
+          <CardContent sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+            <Avatar sx={{ width: 80, height: 80 }}>T1</Avatar>
+            <Box>
+              <Typography sx={{ fontWeight: 800 }}>Team Member</Typography>
+              <Typography color="text.secondary">Joining soon</Typography>
+            </Box>
+          </CardContent>
+        </Card>
+      </Grid>
+      <Grid item xs={12} md={4}>
+        <Card elevation={2} sx={{ borderRadius: 3 }}>
+          <CardContent sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+            <Avatar sx={{ width: 80, height: 80 }}>T2</Avatar>
+            <Box>
+              <Typography sx={{ fontWeight: 800 }}>Team Member</Typography>
+              <Typography color="text.secondary">Joining soon</Typography>
+            </Box>
+          </CardContent>
+        </Card>
+      </Grid>
+    </Grid>
   </Section>
 
       {/* Philosophy & Specialties */}

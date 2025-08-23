@@ -1,7 +1,7 @@
 ---
 slug: diabetes-basics
 title: Diabetes Diet Essentials – Practical Tips and Sample Day
-author: Dietitian Jyoti
+author: Dietitian Jyoti (GoNutriMind)
 cover: /images/blog/diabetes.svg
 excerpt: Manage blood sugar with balanced carbs, fiber-rich foods, and steady meal timing. Includes a sample one-day plan.
 ---

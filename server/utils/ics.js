@@ -18,7 +18,7 @@ function createInvite({ uid, start, end, summary, description, location, organiz
   const lines = [
     'BEGIN:VCALENDAR',
     'VERSION:2.0',
-    'PRODID:-//dt-jyoti//Appointments//EN',
+  'PRODID:-//gonutrimind//Appointments//EN',
     'CALSCALE:GREGORIAN',
     'METHOD:REQUEST',
     'BEGIN:VEVENT',

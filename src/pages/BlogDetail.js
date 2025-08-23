@@ -54,12 +54,12 @@ export default function BlogDetail() {
   return (
     <>
       <SEO
-        title={(title || 'Blog') + ' – Dietitian Jyoti'}
+  title={(title || 'Blog') + ' – GoNutriMind'}
         description={content ? content.replace(/[#>*_`-]/g, ' ').split(/\s+/).slice(0, 24).join(' ') + '…' : 'Article'}
         canonical={`/blogs/${slug}`}
         image={cover || '/images/banner-blogs.svg'}
         type="article"
-        article={{ title, publishedTime: new Date().toISOString(), author: 'Dietitian Jyoti' }}
+  article={{ title, publishedTime: new Date().toISOString(), author: 'Dietitian Jyoti (GoNutriMind)' }}
       />
   {cover && <Banner src={cover} alt={title} />}
   <Section>

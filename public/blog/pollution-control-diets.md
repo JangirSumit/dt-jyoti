@@ -1,7 +1,7 @@
 ---
 slug: pollution-control-diets
 title: Diets for Pollution Exposure – Protect with Antioxidants
-author: Dietitian Jyoti
+author: Dietitian Jyoti (GoNutriMind)
 cover: /images/blog/pollution.svg
 excerpt: Air pollution increases oxidative stress; nutrition can help counteract it.
 ---

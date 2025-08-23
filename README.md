@@ -1,4 +1,4 @@
-# Dietitian App (dt-jyoti)
+# GoNutriMind (dt-jyoti)
 
 Modern React (18) + MUI v5 frontend with an Express backend to manage diet plans, appointments, and slot availability.
 

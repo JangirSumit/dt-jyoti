@@ -25,7 +25,7 @@ router.post('/', async (req, res) => {
 
     const transporter = getTransporter();
     const toAddress = process.env.CONTACT_TO || process.env.SMTP_USER || 'noreply@example.com';
-    const site = process.env.SITE_NAME || 'Dt. Jyoti';
+  const site = process.env.SITE_NAME || 'GoNutriMind';
     const mailOptions = {
       from: process.env.MAIL_FROM || `"${site} Contact" <${process.env.SMTP_USER || 'noreply@example.com'}>` ,
       to: toAddress,

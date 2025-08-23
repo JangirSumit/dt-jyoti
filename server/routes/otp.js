@@ -29,7 +29,7 @@ router.post('/request', async (req, res) => {
       contact, code, nowIso(), addMinutes(Number(process.env.OTP_TTL_MIN || 10))
     );
 
-    const site = process.env.SITE_NAME || 'Dt. Jyoti';
+  const site = process.env.SITE_NAME || 'GoNutriMind';
     const ok = await sendSms(contact, `${site}: Your verification code is ${code}. Valid for 10 minutes.`);
     if (!ok) return res.status(500).json({ error: 'sms_failed' });
 

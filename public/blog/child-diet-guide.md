@@ -1,7 +1,7 @@
 ---
 slug: child-diet-guide
 title: Child Nutrition – Growth, Immunity, and Habits
-author: Dietitian Jyoti
+author: Dietitian Jyoti (GoNutriMind)
 cover: /images/blog/child.svg
 excerpt: Build strong foundations with balanced plates, smart snacks, hydration, and routine.
 ---

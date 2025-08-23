@@ -34,7 +34,7 @@ export default function Contact() {
 
   return (
     <>
-  <SEO title="Contact – Dietitian Jyoti" description="Have a question? Get in touch for clinic timings, online consults, or general queries." canonical="/contact" image="/images/banner-contact.svg" />
+  <SEO title="Contact – GoNutriMind" description="Have a question? Get in touch for clinic timings, online consults, or general queries." canonical="/contact" image="/images/banner-contact.svg" />
       <Banner src="/images/banner-contact.svg" alt="Contact banner" />
   <Section>
   <Paper sx={{ p: { xs: 2, md: 3 } }}>

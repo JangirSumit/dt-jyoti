@@ -142,7 +142,7 @@ export default function AIPlans() {
 
   return (
     <>
-  <SEO title="AI Diet Plans – Dietitian Jyoti" description="Get instant AI-assisted diet plans with calories, macros, and meal ideas. Dietitian-designed logic." canonical="/ai-plans" image="/images/ai/hero-diet.svg" />
+  <SEO title="AI Diet Plans – GoNutriMind" description="Get instant AI-assisted diet plans with calories, macros, and meal ideas. Dietitian-designed logic." canonical="/ai-plans" image="/images/ai/hero-diet.svg" />
       <Banner src="/images/ai/hero-diet.svg" alt="AI Diet Planner" />
   <Section>
   <Paper sx={{ p: { xs: 2, md: 3 }, borderRadius: 3 }}>

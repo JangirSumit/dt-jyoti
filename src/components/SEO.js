@@ -12,7 +12,7 @@ export default function SEO({
   const origin = typeof window !== 'undefined' ? window.location.origin : '';
   const url = canonical ? (canonical.startsWith('http') ? canonical : `${origin}${canonical}`) : undefined;
   const img = image || '/logo128.png';
-  const siteName = 'Dietitian Jyoti';
+  const siteName = 'GoNutriMind — Nutrition for Mind, Mood, and Memory.';
 
   const jsonLd = article
     ? {

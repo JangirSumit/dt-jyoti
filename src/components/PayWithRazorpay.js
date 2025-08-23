@@ -26,7 +26,7 @@ export default function PayWithRazorpay({ appointment, onSuccess, onError }) {
       order_id: orderId,
       amount,
       currency,
-      name: 'Dt. Jyoti',
+  name: 'GoNutriMind',
       description: `Appointment ${appointment.date} ${appointment.slot}`,
       prefill: {
         name: customer?.name || appointment.name,

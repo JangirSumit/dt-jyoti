@@ -36,7 +36,7 @@ export default function NavBar() {
 
   const links = [
     { label: 'Home', to: '/' },
-    { label: 'About me', to: '/about' },
+    { label: 'Our Team', to: '/about' },
     { label: 'Blogs', to: '/blogs' },
     { label: 'Contact', to: '/contact', outlined: true },
   ];
@@ -65,7 +65,7 @@ export default function NavBar() {
           >
             <Box component="img" src="/logo64.png" alt="logo" sx={{ width: 36, height: 36, mr: 1, borderRadius: '8px' }} />
             <Typography variant="h6" sx={{ fontWeight: 800 }}>
-              Dietitian Jyoti
+              GoNutriMind
             </Typography>
           </Box>
           <Box sx={{ flexGrow: 1 }} />
@@ -105,7 +105,7 @@ export default function NavBar() {
         <Toolbar sx={{ minHeight: `${toolbarH}px`, gap: 1, flexWrap: 'wrap' }}>
           {scrolled ? (
             <Typography variant="subtitle2" sx={{ fontWeight: 800, display: { xs: 'none', md: 'block' } }}>
-              Why choose Dt. Jyoti
+              Why choose GoNutriMind
             </Typography>
           ) : (
             <Box />
@@ -130,7 +130,7 @@ export default function NavBar() {
         <Box sx={{ width: 260 }} role="presentation" onClick={toggle(false)} onKeyDown={toggle(false)}>
           <Box sx={{ display: 'flex', alignItems: 'center', p: 2 }}>
             <Box component="img" src="/logo64.png" alt="logo" sx={{ width: 28, height: 28, mr: 1, borderRadius: '6px' }} />
-            <Typography variant="subtitle1" sx={{ fontWeight: 700 }}>Dietitian Jyoti</Typography>
+            <Typography variant="subtitle1" sx={{ fontWeight: 700 }}>GoNutriMind</Typography>
           </Box>
           <Divider />
           <List>

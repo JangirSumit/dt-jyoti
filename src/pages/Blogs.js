@@ -35,7 +35,7 @@ export default function Blogs() {
 
   return (
     <>
-  <SEO title="Nutrition Blog – Dietitian Jyoti" description="Practical guides on diabetes, gut health, hydration, hypertension, intermittent fasting, and more." canonical="/blogs" image="/images/banner-blogs.svg" />
+  <SEO title="Nutrition Blog – GoNutriMind" description="Practical guides on diabetes, gut health, hydration, hypertension, intermittent fasting, and more." canonical="/blogs" image="/images/banner-blogs.svg" />
       <Banner src="/images/banner-blogs.svg" alt="Blogs banner" />
   <Section>
   <Paper sx={{ p: { xs: 2, md: 3 }, borderRadius: 3 }}>

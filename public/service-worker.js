@@ -1,6 +1,6 @@
 /* Minimal service worker for CRA to enable offline caching.
    Note: For production-grade PWAs, prefer Workbox. */
-const CACHE_NAME = 'dt-jyoti-cache-v1';
+const CACHE_NAME = 'gonutrimind-cache-v1';
 const CORE_ASSETS = [
   '/',
   '/index.html',

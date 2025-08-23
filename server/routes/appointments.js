@@ -162,11 +162,11 @@ router.post('/', async (req, res) => {
 
     try {
       const transporter = getTransporter();
-      const site = process.env.SITE_NAME || 'Dt. Jyoti';
+  const site = process.env.SITE_NAME || 'GoNutriMind';
       const toAdmin = process.env.CONTACT_TO || process.env.SMTP_USER || 'noreply@example.com';
       const fromAddr = process.env.MAIL_FROM || `"${site} Appointments" <${process.env.SMTP_USER || 'noreply@example.com'}>`;
 
-      const room = `dtjyoti-${appt.id}`;
+  const room = `gonutrimind-${appt.id}`;
       const meetingUrl = `https://meet.jit.si/${room}`;
 
       const [h, m, ampm] = slot.split(/[: ]/);
@@ -174,7 +174,7 @@ router.post('/', async (req, res) => {
       const startLocal = new Date(`${date}T${String(hour).padStart(2,'0')}:${m || '00'}:00`);
       const endLocal = new Date(startLocal.getTime() + 30 * 60000);
       const ics = createInvite({
-        uid: `${appt.id}@dt-jyoti`,
+  uid: `${appt.id}@gonutrimind`,
         start: startLocal,
         end: endLocal,
         summary: `Consultation with ${site}`,
@@ -285,7 +285,7 @@ router.post('/:id/confirm-sms', async (req, res) => {
     }
 
     const to = normalizePhone(appt.contact);
-    const msg = `Hi ${appt.name}, your appointment is on ${appt.date} at ${appt.slot}. Please complete the payment of ₹${amountInr} to confirm: ${linkUrl}\n- Dt. Jyoti`;
+  const msg = `Hi ${appt.name}, your appointment is on ${appt.date} at ${appt.slot}. Please complete the payment of ₹${amountInr} to confirm: ${linkUrl}\n- GoNutriMind`;
 
     try {
       await sendSms(to, msg);
