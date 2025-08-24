@@ -39,7 +39,8 @@
     "eject": "react-scripts eject",
     "server": "nodemon server/index.js",
     "db:reset": "node -e \"require('fs').rmSync('server/data.sqlite3',{force:true}); console.log('db removed')\"",
-    "dev": "concurrently \"npm run server\" \"npm start\""
+    "dev": "concurrently \"npm run server\" \"npm start\"",
+    "package:deploy": "node scripts/package-release.js"
   },
   "eslintConfig": {
     "extends": "react-app"
