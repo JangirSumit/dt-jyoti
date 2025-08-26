@@ -9,6 +9,31 @@ import Section from '../components/Section';
 export default function About() {
   useDocumentTitle('About');
   const revealRef = useRef([]);
+
+  // Logos (served from /public/images)
+  const logos = [
+    { src: '/images/medanta.png', alt: 'Medanta' },
+    { src: '/images/sgrh.png', alt: 'Sir Ganga Ram Hospital' },
+    { src: '/images/park-hospital.png', alt: 'Park Hospital' },
+    { src: '/images/ida.png', alt: 'Indian Dietetic Association' },
+    { src: '/images/amity.png', alt: 'Amity University' }
+  ];
+
+  // NEW: split into three rows
+  const affItems = [
+    { logo: '/images/ida.png', org: 'Indian Dietetic Association', role: 'Member', tag: 'Affiliation' }
+  ];
+
+  const expItems = [
+    { logo: '/images/sgrh.png',  org: 'Sir Ganga Ram Kolmet Hospital', role: 'Clinical Dietitian', tag: 'Experience' },
+    { logo: '/images/park-hospital.png', org: 'Park Group of Hospitals', role: 'Senior Nutritionist', tag: 'Experience' },
+    { logo: '/images/medanta.png', org: 'Medanta – The Medicity, Gurugram', role: 'Intern Dietitian', tag: 'Experience' }
+  ];
+
+  const eduItems = [
+    { logo: '/images/amity.png', org: 'Amity University', role: 'MSc – Dietetics & Nutrition', tag: 'Education' }
+  ];
+
   useEffect(() => {
     const els = revealRef.current.filter(Boolean);
     if (!els.length) return;
@@ -61,7 +86,18 @@ export default function About() {
           </Grid>
           <Grid item xs={12} md={5}>
             <Stack alignItems="center" spacing={2}>
-              <Avatar src="/images/humans/dietitian.svg" alt="Dt. Jyoti" sx={{ width: 140, height: 140, border: '4px solid #fff', boxShadow: 2 }} />
+              <Avatar
+                src="/images/profile-jyoti.jpg"
+                alt="Profile photo"
+                sx={{
+                  width: 160,
+                  height: 160,
+                  border: '4px solid #fff',
+                  boxShadow: 2,
+                  bgcolor: '#eee',
+                  objectFit: 'cover'
+                }}
+              />
               <Stack direction="row" spacing={1}>
                 <Tooltip title="Years of practice"><Chip label="7+ yrs" /></Tooltip>
                 <Tooltip title="Clients served"><Chip label="1000+ clients" /></Tooltip>
@@ -129,31 +165,95 @@ export default function About() {
 
   {/* Credentials compact */}
   <Section>
-  <Paper className="reveal" ref={(el) => (revealRef.current[4] = el)} sx={{ p: { xs: 2, md: 3 }, borderRadius: 3 }}>
-        <Grid container spacing={{ xs: 2, md: 3 }}>
-          <Grid item xs={12} md={4}>
-            <Typography variant="h6" gutterBottom>Education</Typography>
-            <Typography>MSc – Dietetics & Nutrition</Typography>
-            <Typography color="text.secondary">Amity University, Gurgaon (2014)</Typography>
-          </Grid>
-          <Grid item xs={12} md={4}>
-            <Typography variant="h6" gutterBottom>Experience</Typography>
-            <Typography>Clinical Dietitian</Typography>
-            <Typography color="text.secondary">Sir Ganga Ram Kolmet Hospital</Typography>
-            <Divider sx={{ my: 1 }} />
-            <Typography>Senior Nutritionist</Typography>
-            <Typography color="text.secondary">Park Group of Hospitals</Typography>
-          </Grid>
-          <Grid item xs={12} md={4}>
-            <Typography variant="h6" gutterBottom>Memberships</Typography>
-            <Typography>Indian Dietetic Association</Typography>
-            <Divider sx={{ my: 1 }} />
-            <Typography variant="h6" gutterBottom>Awards</Typography>
-            <Typography>Best Dietitian – 2017</Typography>
-          </Grid>
+    <Paper className="reveal" ref={(el) => (revealRef.current[4] = el)} sx={{ p: { xs: 2, md: 3 }, borderRadius: 3 }}>
+      <Grid container spacing={{ xs: 2, md: 3 }}>
+        {/* Row 1: Affiliations */}
+        <Grid item xs={12}>
+          <Typography variant="h6" gutterBottom>Affiliations</Typography>
+          <Stack spacing={2}>
+            {affItems.map((it, idx) => (
+              <React.Fragment key={it.org}>
+                <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', textAlign: 'center', p: 1 }}>
+                  <Box component="img" src={it.logo} alt={it.org}
+                       sx={{ width: 64, height: 64, objectFit: 'contain', filter: 'grayscale(1) contrast(1.05)', mb: 0.5 }} />
+                  <Typography variant="subtitle1" sx={{ fontWeight: 700 }}>{it.org}</Typography>
+                  <Typography variant="body2" color="text.secondary">{it.role}</Typography>
+                  {/* removed tag chip */}
+                </Box>
+                {idx < affItems.length - 1 && <Divider />}
+              </React.Fragment>
+            ))}
+          </Stack>
         </Grid>
-  </Paper>
+
+        {/* Row 2: Experience */}
+        <Grid item xs={12}>
+          <Typography variant="h6" gutterBottom>Experience</Typography>
+          <Box sx={{ display: 'flex', gap: { xs: 2, md: 4 }, flexWrap: 'wrap', justifyContent: 'center', alignItems: 'flex-start' }}>
+            {expItems.map((it) => (
+              <Box key={it.org} sx={{ minWidth: 200, maxWidth: 260, textAlign: 'center', p: 1 }}>
+                <Box component="img" src={it.logo} alt={it.org}
+                     sx={{ width: 64, height: 64, objectFit: 'contain', filter: 'grayscale(1) contrast(1.05)', mb: 0.5 }} />
+                <Typography variant="subtitle1" sx={{ fontWeight: 700 }}>{it.org}</Typography>
+                <Typography variant="body2" color="text.secondary">{it.role}</Typography>
+                {/* removed tag chip */}
+              </Box>
+            ))}
+          </Box>
+        </Grid>
+
+        {/* Row 3: Education */}
+        <Grid item xs={12}>
+          <Typography variant="h6" gutterBottom>Education</Typography>
+          <Stack spacing={2}>
+            {eduItems.map((it, idx) => (
+              <React.Fragment key={it.org}>
+                <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', textAlign: 'center', p: 1 }}>
+                  <Box component="img" src={it.logo} alt={it.org}
+                       sx={{ width: 64, height: 64, objectFit: 'contain', filter: 'grayscale(1) contrast(1.05)', mb: 0.5 }} />
+                  <Typography variant="subtitle1" sx={{ fontWeight: 700 }}>{it.org}</Typography>
+                  <Typography variant="body2" color="text.secondary">{it.role}</Typography>
+                  {/* removed tag chip */}
+                </Box>
+                {idx < eduItems.length - 1 && <Divider />}
+              </React.Fragment>
+            ))}
+          </Stack>
+        </Grid>
+      </Grid>
+
+      <Divider sx={{ my: 2 }} />
+      <Box sx={{ textAlign: 'center', mb: 1 }}>
+        <Typography variant="subtitle2" color="text.secondary">Affiliations & Experience</Typography>
+      </Box>
+      {/* show all logos in a single row */}
+      <Box
+        sx={{
+          display: 'flex',
+          gap: { xs: 2, md: 4 },
+          flexWrap: 'wrap',
+          justifyContent: 'center',
+          alignItems: 'center',
+          py: 1
+        }}
+      >
+        {logos.map((l) => (
+          <Box
+            key={l.src}
+            component="img"
+            src={l.src}
+            alt={l.alt}
+            sx={{
+              height: 48,
+              maxWidth: 160,
+              objectFit: 'contain',
+              filter: 'grayscale(1) contrast(1.1)',
+              opacity: 0.95
+            }}
+          />
+        ))}
+      </Box>
+    </Paper>
   </Section>
-    </>
-  );
-}
+</>
+)}

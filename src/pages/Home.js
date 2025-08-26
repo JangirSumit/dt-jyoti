@@ -152,7 +152,7 @@ export default function Home() {
   return (
     <Box>
       <SEO
-        title="Dietitian Jyoti – Personalized Nutrition & Online Appointments"
+        title="GoNutriMind – Personalized Nutrition & Online Appointments"
         description="Clinical-grade diet plans, AI-assisted daily planning, and easy online appointments. Dietitian-led, practical nutrition."
         canonical="/"
         image="/images/banner-home.svg"
@@ -371,7 +371,7 @@ export default function Home() {
           }}
         >
           <Typography variant="h5" gutterBottom>
-            Why choose Dt. Jyoti
+            Why choose GoNutriMind
           </Typography>
           <Grid container spacing={{ xs: 1.5, md: 2 }}>
             <Grid item xs={12} md={4}>
