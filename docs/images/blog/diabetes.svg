@@ -1,0 +1,15 @@
+<svg width="1200" height="420" viewBox="0 0 1200 420" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Diabetes diet cover">
+  <defs>
+    <linearGradient id="gd" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#e1f5fe"/>
+      <stop offset="100%" stop-color="#e8f5e9"/>
+    </linearGradient>
+  </defs>
+  <rect width="1200" height="420" fill="url(#gd)"/>
+  <g opacity="0.6">
+    <circle cx="220" cy="210" r="120" fill="#4fc3f7"/>
+    <circle cx="520" cy="190" r="90" fill="#81c784"/>
+    <circle cx="900" cy="240" r="140" fill="#64b5f6"/>
+  </g>
+  <text x="80" y="240" font-family="'Inter', Arial, sans-serif" font-weight="800" font-size="56" fill="#0d47a1">Diabetes Diet Essentials</text>
+</svg>
