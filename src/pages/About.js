@@ -1,4 +1,4 @@
-import React, { useEffect, useRef } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { Typography, Paper, Grid, Box, Chip, Divider, Card, CardContent, Stack, Avatar, Tooltip } from '@mui/material';
 import Button from '@mui/material/Button';
 import useDocumentTitle from '../hooks/useDocumentTitle';
@@ -16,18 +16,27 @@ export default function About() {
     { src: '/images/sgrh.png', alt: 'Sir Ganga Ram Hospital' },
     { src: '/images/park-hospital.png', alt: 'Park Hospital' },
     { src: '/images/ida.png', alt: 'Indian Dietetic Association' },
-    { src: '/images/amity.png', alt: 'Amity University' }
+    { src: '/images/amity.png', alt: 'Amity University' },
+    { src: '/images/practo.png', alt: 'Practo' },
+    { src: '/images/verizone.png', alt: 'Verizone Hospital' }
   ];
+
+  // Track if the "Affiliations & Experience" area is in view
+  const [affExpInView, setAffExpInView] = useState(false);
+  const affExpSentinelRef = useRef(null);
 
   // NEW: split into three rows
   const affItems = [
     { logo: '/images/ida.png', org: 'Indian Dietetic Association', role: 'Member', tag: 'Affiliation' }
   ];
 
+  // Experience (add Practo + Verizone)
   const expItems = [
     { logo: '/images/sgrh.png',  org: 'Sir Ganga Ram Kolmet Hospital', role: 'Clinical Dietitian', tag: 'Experience' },
     { logo: '/images/park-hospital.png', org: 'Park Group of Hospitals', role: 'Senior Nutritionist', tag: 'Experience' },
-    { logo: '/images/medanta.png', org: 'Medanta – The Medicity, Gurugram', role: 'Intern Dietitian', tag: 'Experience' }
+    { logo: '/images/medanta.png', org: 'Medanta – The Medicity, Gurugram', role: 'Intern Dietitian', tag: 'Experience' },
+    { logo: '/images/practo.png', org: 'Practo', role: 'Clinical Dietitian', tag: 'Experience' },       // added
+    { logo: '/images/verizone.png', org: 'Verizone Hospital', role: 'Dietitian', tag: 'Experience' }    // added
   ];
 
   const eduItems = [
@@ -48,6 +57,18 @@ export default function About() {
     els.forEach((el) => io.observe(el));
     return () => io.disconnect();
   }, []);
+
+  // Observe the sentinel inside the "Affiliations & Experience" section
+  useEffect(() => {
+    if (!affExpSentinelRef.current) return;
+    const obs = new IntersectionObserver(
+      ([entry]) => setAffExpInView(entry.isIntersecting),
+      { root: null, threshold: 0.25 }
+    );
+    obs.observe(affExpSentinelRef.current);
+    return () => obs.disconnect();
+  }, []);
+
   return (
     <>
       <SEO title="About – Dietitian Jyoti" description="Clinical dietitian with 7+ years of experience. Personalized, practical, and evidence-based nutrition care." canonical="/about" image="/images/banner-about.svg" />
@@ -71,7 +92,7 @@ export default function About() {
               <Typography variant="overline" color="text.secondary">Dietitian & Nutritionist</Typography>
               <Typography variant="h3" sx={{ fontWeight: 800, lineHeight: 1.1 }}>Dt. Jyoti Jangid</Typography>
               <Typography variant="h6" color="text.secondary">
-                I help you build sustainable nutrition habits with practical, culturally relevant plans—grounded in clinical nutrition.
+                I help you build sustainable nutrition habits with practical, culturally relevant plans-grounded in clinical nutrition.
               </Typography>
               <Stack direction="row" spacing={1} flexWrap="wrap">
                 <Chip label="Evidence‑based" color="success" size="small" variant="outlined" />
@@ -174,8 +195,9 @@ export default function About() {
             {affItems.map((it, idx) => (
               <React.Fragment key={it.org}>
                 <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', textAlign: 'center', p: 1 }}>
+                  {/* Affiliations logo */}
                   <Box component="img" src={it.logo} alt={it.org}
-                       sx={{ width: 64, height: 64, objectFit: 'contain', filter: 'grayscale(1) contrast(1.05)', mb: 0.5 }} />
+                       sx={{ width: 64, height: 64, objectFit: 'contain', /* filter: 'grayscale(1) contrast(1.05)', */ mb: 0.5 }} />
                   <Typography variant="subtitle1" sx={{ fontWeight: 700 }}>{it.org}</Typography>
                   <Typography variant="body2" color="text.secondary">{it.role}</Typography>
                   {/* removed tag chip */}
@@ -189,14 +211,41 @@ export default function About() {
         {/* Row 2: Experience */}
         <Grid item xs={12}>
           <Typography variant="h6" gutterBottom>Experience</Typography>
-          <Box sx={{ display: 'flex', gap: { xs: 2, md: 4 }, flexWrap: 'wrap', justifyContent: 'center', alignItems: 'flex-start' }}>
+          <Box
+            sx={{
+              display: 'flex',
+              gap: { xs: 2, md: 4 },
+              flexWrap: 'wrap',
+              justifyContent: 'center',
+              alignItems: 'flex-start'
+            }}
+          >
             {expItems.map((it) => (
-              <Box key={it.org} sx={{ minWidth: 200, maxWidth: 260, textAlign: 'center', p: 1 }}>
-                <Box component="img" src={it.logo} alt={it.org}
-                     sx={{ width: 64, height: 64, objectFit: 'contain', filter: 'grayscale(1) contrast(1.05)', mb: 0.5 }} />
+              <Box
+                key={it.org}
+                sx={{
+                  minWidth: 200,
+                  maxWidth: 260,
+                  textAlign: 'center',
+                  p: 1
+                }}
+              >
+                {/* Experience logo */}
+                <Box
+                  component="img"
+                  src={it.logo}
+                  alt={it.org}
+                  sx={{
+                    display: 'block',
+                    mx: 'auto',
+                    width: 64,
+                    height: 64,
+                    objectFit: 'contain',
+                    mb: 0.5
+                  }}
+                />
                 <Typography variant="subtitle1" sx={{ fontWeight: 700 }}>{it.org}</Typography>
                 <Typography variant="body2" color="text.secondary">{it.role}</Typography>
-                {/* removed tag chip */}
               </Box>
             ))}
           </Box>
@@ -209,8 +258,9 @@ export default function About() {
             {eduItems.map((it, idx) => (
               <React.Fragment key={it.org}>
                 <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', textAlign: 'center', p: 1 }}>
+                  {/* Education logo */}
                   <Box component="img" src={it.logo} alt={it.org}
-                       sx={{ width: 64, height: 64, objectFit: 'contain', filter: 'grayscale(1) contrast(1.05)', mb: 0.5 }} />
+                       sx={{ width: 64, height: 64, objectFit: 'contain', /* filter: 'grayscale(1) contrast(1.05)', */ mb: 0.5 }} />
                   <Typography variant="subtitle1" sx={{ fontWeight: 700 }}>{it.org}</Typography>
                   <Typography variant="body2" color="text.secondary">{it.role}</Typography>
                   {/* removed tag chip */}
@@ -226,34 +276,92 @@ export default function About() {
       <Box sx={{ textAlign: 'center', mb: 1 }}>
         <Typography variant="subtitle2" color="text.secondary">Affiliations & Experience</Typography>
       </Box>
-      {/* show all logos in a single row */}
-      <Box
-        sx={{
-          display: 'flex',
-          gap: { xs: 2, md: 4 },
-          flexWrap: 'wrap',
-          justifyContent: 'center',
-          alignItems: 'center',
-          py: 1
-        }}
-      >
-        {logos.map((l) => (
-          <Box
-            key={l.src}
-            component="img"
-            src={l.src}
-            alt={l.alt}
-            sx={{
-              height: 48,
-              maxWidth: 160,
-              objectFit: 'contain',
-              filter: 'grayscale(1) contrast(1.1)',
-              opacity: 0.95
-            }}
-          />
-        ))}
-      </Box>
+      {/* Sentinel marks where the bar should dock into the section */}
+      <Box ref={affExpSentinelRef} sx={{ height: 1 }} />
+      {/* When this section is in view, render logos here (docked) */}
+      {affExpInView && (
+        <Box
+          sx={{
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            gap: { xs: 2, md: 3 },
+            flexWrap: 'wrap',
+            py: 1
+          }}
+        >
+          {logos.map((l) => (
+            <Box
+              key={l.src}
+              component="img"
+              src={l.src}
+              alt={l.alt}
+              sx={{ height: 32, maxWidth: 120, objectFit: 'contain', opacity: 0.95 }}
+            />
+          ))}
+        </Box>
+      )}
     </Paper>
   </Section>
+
+  {/* Spacer only when the floating bar is visible */}
+  <Box sx={{ height: 56, display: { xs: 'none', md: affExpInView ? 'none' : 'block' } }} />
+
+  {/* Floating logos bar (desktop) */}
+  <Box
+    component="aside"
+    aria-label="Affiliations and Experience logos"
+    sx={{
+      position: 'fixed',
+      left: 0,
+      right: 0,
+      bottom: 0,
+      zIndex: 1300,
+      // Hide the floating bar while the section is in view (since it docks there)
+      display: { xs: 'none', md: affExpInView ? 'none' : 'block' },
+    }}
+  >
+    <Box
+      sx={{
+        width: '100%',
+        backgroundColor: (theme) =>
+          theme.palette.mode === 'dark' ? 'rgba(0,0,0,0.25)' : 'rgba(255,255,255,0.45)',
+        backdropFilter: 'blur(6px) saturate(1.1)',
+        borderTop: (theme) =>
+          `1px solid ${theme.palette.mode === 'dark' ? 'rgba(255,255,255,0.12)' : 'rgba(0,0,0,0.08)'}`,
+        py: 1,
+      }}
+    >
+      <Box
+        sx={{
+          maxWidth: 1200,
+          mx: 'auto',
+          px: 2,
+          minHeight: 56,
+          overflow: 'hidden',
+        }}
+      >
+        <Box
+          sx={{
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            gap: { xs: 2, md: 3 },
+            flexWrap: 'wrap',
+          }}
+        >
+          {logos.map((l) => (
+            <Box
+              key={l.src}
+              component="img"
+              src={l.src}
+              alt={l.alt}
+              sx={{ height: 32, maxWidth: 120, objectFit: 'contain', opacity: 0.95 }}
+            />
+          ))}
+        </Box>
+      </Box>
+    </Box>
+  </Box>
 </>
 )}
