@@ -1,0 +1,16 @@
+<svg width="1200" height="240" viewBox="0 0 1200 240" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Appointment banner">
+  <defs>
+    <linearGradient id="gb" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#e8f5e9"/>
+      <stop offset="100%" stop-color="#e0f7fa"/>
+    </linearGradient>
+  </defs>
+  <rect width="1200" height="240" fill="url(#gb)"/>
+  <g opacity="0.5">
+    <circle cx="180" cy="120" r="60" fill="#66bb6a"/>
+    <circle cx="420" cy="120" r="60" fill="#4db6ac"/>
+    <circle cx="660" cy="120" r="60" fill="#26a69a"/>
+    <circle cx="900" cy="120" r="60" fill="#2e7d32"/>
+  </g>
+  <text x="80" y="135" font-family="'Inter', Arial, sans-serif" font-weight="700" font-size="42" fill="#1b5e20">Book Your Appointment</text>
+</svg>

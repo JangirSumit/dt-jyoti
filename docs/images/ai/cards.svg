@@ -1,0 +1,11 @@
+<svg width="1200" height="300" viewBox="0 0 1200 300" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="AI cards">
+  <rect x="60" y="40" width="300" height="220" rx="20" fill="#ffffff" stroke="#e0e0e0"/>
+  <rect x="450" y="40" width="300" height="220" rx="20" fill="#ffffff" stroke="#e0e0e0"/>
+  <rect x="840" y="40" width="300" height="220" rx="20" fill="#ffffff" stroke="#e0e0e0"/>
+  <circle cx="210" cy="110" r="32" fill="#66bb6a"/>
+  <circle cx="600" cy="110" r="32" fill="#42a5f5"/>
+  <circle cx="990" cy="110" r="32" fill="#ffb74d"/>
+  <rect x="140" y="160" width="140" height="20" rx="10" fill="#c8e6c9"/>
+  <rect x="530" y="160" width="140" height="20" rx="10" fill="#bbdefb"/>
+  <rect x="920" y="160" width="140" height="20" rx="10" fill="#ffe0b2"/>
+</svg>
