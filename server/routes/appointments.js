@@ -18,6 +18,48 @@ const DEFAULT_SLOT_OPTIONS = SLOT_OPTIONS.length ? SLOT_OPTIONS : [
 
 const router = Router();
 
+// --- helpers (fix) ---
+function escapeHtml(s) {
+  return String(s || '')
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;');
+}
+function icsDate(dt) {
+  // UTC in YYYYMMDDTHHMMSSZ
+  const z = new Date(dt).toISOString().replace(/[-:]/g, '').replace(/\.\d{3}Z$/, 'Z');
+  return z;
+}
+function createInvite({ uid, start, end, summary, description, location, organizerEmail, attendeeEmail }) {
+  const dtStamp = icsDate(new Date());
+  const dtStart = icsDate(start);
+  const dtEnd = icsDate(end);
+  const org = organizerEmail ? `ORGANIZER:mailto:${organizerEmail}` : '';
+  const att = attendeeEmail ? `ATTENDEE;ROLE=REQ-PARTICIPANT;PARTSTAT=NEEDS-ACTION;RSVP=TRUE:mailto:${attendeeEmail}` : '';
+  return [
+    'BEGIN:VCALENDAR',
+    'PRODID:-//dt-jyoti//appointments//EN',
+    'VERSION:2.0',
+    'CALSCALE:GREGORIAN',
+    'METHOD:REQUEST',
+    'BEGIN:VEVENT',
+    `UID:${uid}`,
+    `DTSTAMP:${dtStamp}`,
+    `DTSTART:${dtStart}`,
+    `DTEND:${dtEnd}`,
+    `SUMMARY:${summary || 'Consultation'}`,
+    `DESCRIPTION:${(description || '').replace(/\r?\n/g, '\\n')}`,
+    location ? `LOCATION:${location}` : '',
+    org,
+    att,
+    'END:VEVENT',
+    'END:VCALENDAR',
+    ''
+  ].filter(Boolean).join('\r\n');
+}
+// --- end helpers ---
+
 // Helpers to generate a unique patient_uid (shared-safe, DB-agnostic)
 function lettersOnly(s) {
   return String(s || '').toUpperCase().replace(/[^A-Z]/g, '');
