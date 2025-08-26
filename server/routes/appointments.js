@@ -18,6 +18,57 @@ const DEFAULT_SLOT_OPTIONS = SLOT_OPTIONS.length ? SLOT_OPTIONS : [
 
 const router = Router();
 
+// Helpers to generate a unique patient_uid (shared-safe, DB-agnostic)
+function lettersOnly(s) {
+  return String(s || '').toUpperCase().replace(/[^A-Z]/g, '');
+}
+function makePrefix(name, contact, email) {
+  const pick =
+    String(name || '').trim() ||
+    (email ? String(email).split('@')[0] : '') ||
+    String(contact || '');
+  const letters = lettersOnly(pick);
+  return (letters || 'PAT').padEnd(3, 'X').slice(0, 3);
+}
+async function generatePatientUidAndInsert(db, name, contact, email) {
+  const now = new Date().toISOString();
+  const prefix = makePrefix(name, contact, email);
+  for (let attempt = 0; attempt < 5; attempt++) {
+    const rows = await db.all(`SELECT patient_uid FROM patients WHERE patient_uid LIKE ?`, `${prefix}%`);
+    let maxNum = 0;
+    for (const r of rows) {
+      const uid = String(r.patient_uid || '');
+      const n = parseInt(uid.slice(3), 10);
+      if (!isNaN(n) && n > maxNum) maxNum = n;
+    }
+    const next = maxNum + 1;
+    const uid = `${prefix}${String(next).padStart(6, '0')}`;
+    try {
+      await db.run(
+        `INSERT INTO patients (name, contact, email, patient_uid, created_at, updated_at)
+         VALUES (?,?,?,?,?,?)`,
+        name || null, contact || null, email || null, uid, now, now
+      );
+      return uid;
+    } catch (e) {
+      // Unique collision => try next number
+      if (String(e?.message || '').toLowerCase().includes('unique')) continue;
+      throw e;
+    }
+  }
+  // Fallback last try
+  const uid = `${makePrefix(name, contact, email)}${String(Date.now()).slice(-6)}`;
+  await db.run(
+    `INSERT INTO patients (name, contact, email, patient_uid, created_at, updated_at)
+     VALUES (?,?,?,?,?,?)`,
+    name || null, contact || null, email || null, uid, now, now
+  );
+  return uid;
+}
+
+function normEmail(s) { return String(s || '').trim().toLowerCase(); }
+function normName(s) { return String(s || '').trim(); }
+
 // GET available slot options (for UI)
 router.get('/slot-options', (_req, res) => {
   res.json({ slots: DEFAULT_SLOT_OPTIONS });
@@ -128,7 +179,7 @@ router.post('/', async (req, res) => {
     if (!name || !contact || !date || !slot) {
       return res.status(400).json({ error: 'name, contact, date, slot are required' });
     }
-    // Verify OTP token
+    // Verify OTP (unchanged)
     try {
       const db = await getDb();
       const token = otpToken || String(req.headers['x-otp-token'] || '');
@@ -136,28 +187,69 @@ router.post('/', async (req, res) => {
       const v = await db.get('SELECT * FROM verifications WHERE token = ? LIMIT 1', token);
       if (!v) return res.status(401).json({ error: 'invalid verification' });
 
-      const contactNorm = normalizePhone(contact); // now defined
+      const contactNorm = normalizePhone(contact);
       if (v.contact !== contactNorm) return res.status(401).json({ error: 'contact mismatch' });
       if (new Date(v.expires_at).getTime() < Date.now()) return res.status(401).json({ error: 'verification expired' });
     } catch (ve) {
       return res.status(401).json({ error: 'verification failed' });
     }
 
-    // Prevent booking a blocked or non-existent slot
-    if (!DEFAULT_SLOT_OPTIONS.includes(slot)) return res.status(400).json({ error: 'Invalid slot' }); // FIX
+    if (!DEFAULT_SLOT_OPTIONS.includes(slot)) return res.status(400).json({ error: 'Invalid slot' });
 
     const db = await getDb();
+    const contactNorm = normalizePhone(contact);
+    const emailNorm = normEmail(email);
+    const nameNorm = normName(name);
+
+    // Resolve or create patient by strict combo (name+contact+email)
+    let patientUid = null;
+
+    // If a patient_uid is provided, check if combo differs from that record
+    if (patient_uid) {
+      const p = await db.get(
+        `SELECT patient_uid, name, contact, email FROM patients WHERE patient_uid = ? LIMIT 1`,
+        patient_uid
+      );
+      if (p) {
+        const comboMatches =
+          normName(p.name) === nameNorm &&
+          normalizePhone(p.contact) === contactNorm &&
+          normEmail(p.email) === emailNorm;
+        if (comboMatches) {
+          patientUid = p.patient_uid;
+        } else {
+          // Details changed -> create a new patient ID
+          patientUid = await generatePatientUidAndInsert(db, nameNorm, contactNorm, emailNorm);
+        }
+      } else {
+        // Provided uid not found -> fall through to search/create
+      }
+    }
+
+    // If still not resolved, try to find an exact match by (contact, name, email)
+    if (!patientUid) {
+      const rows = await db.all(`SELECT patient_uid, name, contact, email FROM patients WHERE contact = ?`, contactNorm);
+      const exact = rows.find(r => normName(r.name) === nameNorm && normEmail(r.email) === emailNorm);
+      if (exact) {
+        patientUid = exact.patient_uid;
+      } else {
+        // Create a new patient
+        patientUid = await generatePatientUidAndInsert(db, nameNorm, contactNorm, emailNorm);
+      }
+    }
+
+    // Slot checks
     const isBlocked = await db.get('SELECT 1 AS x FROM unavailable_slots WHERE date = ? AND slot = ? LIMIT 1', date, slot);
     if (isBlocked) return res.status(409).json({ error: 'Slot unavailable' });
-
     const existing = await db.get('SELECT 1 FROM appointments WHERE date = ? AND slot = ? LIMIT 1', date, slot);
     if (existing) return res.status(409).json({ error: 'Slot already booked' });
 
-    const appt = { id: uuidv4(), name, contact, date, slot, email: email || '', patient_uid };
+    // Create appointment linked to patientUid
+    const appt = { id: uuidv4(), name, contact: contactNorm, date, slot, email: email || '', patient_uid: patientUid };
     await db.run(
       `INSERT INTO appointments (id, name, contact, email, date, slot, patient_uid)
        VALUES (?,?,?,?,?,?,?)`,
-      appt.id, appt.name, appt.contact, appt.email, appt.date, appt.slot, appt.patient_uid || null
+      appt.id, appt.name, appt.contact, appt.email, appt.date, appt.slot, appt.patient_uid
     );
 
     try {
