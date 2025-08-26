@@ -1,0 +1,9 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" width="128" height="128" role="img" aria-label="Yoga teacher avatar">
+  <rect width="64" height="64" rx="8" fill="#f7f7e8" />
+  <g transform="translate(6,6)" stroke="#b07b2b" stroke-width="2" fill="none">
+    <circle cx="14" cy="12" r="8" fill="#fff" />
+    <path d="M8 28 C12 22, 18 22, 22 28" fill="#fff" stroke="#b07b2b" />
+    <path d="M24 34 C28 30, 36 30, 40 34" stroke="#b07b2b" stroke-linecap="round" />
+    <path d="M28 16 L36 8" stroke="#b07b2b" stroke-linecap="round" />
+  </g>
+</svg>

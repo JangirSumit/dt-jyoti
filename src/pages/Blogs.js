@@ -1,5 +1,5 @@
 import React, { useEffect, useMemo, useState } from 'react';
-import { Paper, Typography, Grid, Card, CardMedia, Box, Stack, Chip, TextField, InputAdornment, Skeleton } from '@mui/material';
+import { Paper, Typography, Grid, Card, CardMedia, Box, Stack, Chip, TextField, InputAdornment, Skeleton, Button, CardContent } from '@mui/material';
 import SearchIcon from '@mui/icons-material/Search';
 import Banner from '../components/Banner';
 import { Link as RouterLink } from 'react-router-dom';
@@ -64,72 +64,31 @@ export default function Blogs() {
             </Grid>
           ))}
           {posts.length > 0 && filtered.map(p => (
-            <Grid item xs={12} sm={6} md={4} key={p.slug}>
-              <Card
-                component={RouterLink}
-                to={`/blogs/${p.slug}`}
-                aria-label={`Read: ${p.title}`}
-                sx={{
-                  textDecoration: 'none',
-                  color: 'inherit',
-                  borderRadius: 3,
-                  overflow: 'hidden',
-                  bgcolor: 'grey.100',
-                  transition: 'transform .25s ease, box-shadow .25s ease',
-                  '&:hover': { transform: 'translateY(-4px)', boxShadow: 8 },
-                }}
-              >
-                <Box sx={{ position: 'relative', width: '100%', pt: '62.5%' }}>
-                  <CardMedia
-                    component="img"
-                    image={p.cover}
-                    alt={p.title}
-                    loading="lazy"
-                    onError={(e)=>{ e.currentTarget.src = '/images/abstract/a1.svg'; }}
-                    sx={{
-                      position: 'absolute',
-                      inset: 0,
-                      width: '100%',
-                      height: '100%',
-                      objectFit: 'cover',
-                      objectPosition: 'center',
-                      filter: 'saturate(1.05) contrast(1.05)',
-                      transition: 'transform .35s ease',
-                      '.MuiCard-root:hover &': { transform: 'scale(1.04)' }
-                    }}
-                  />
-                  <Box sx={{ position: 'absolute', inset: 0, background: 'linear-gradient(180deg, rgba(0,0,0,0.05) 20%, rgba(0,0,0,0.75) 100%)' }} />
-                  <Box sx={{ position: 'absolute', left: 16, right: 16, bottom: 16, color: '#fff', textShadow: '0 1px 2px rgba(0,0,0,.6)' }}>
-                    <Stack direction="row" spacing={1} sx={{ mb: .75 }}>
-                      <Chip size="small" label={p.tag} variant="filled" sx={{ bgcolor: 'rgba(255,255,255,0.95)', color: 'rgba(10, 34, 10, 0.9)', fontWeight: 600 }} />
-                      <Chip size="small" label={p.read} variant="outlined" sx={{ borderColor: 'rgba(255,255,255,0.8)', color: 'rgba(255,255,255,0.95)', backgroundColor: 'rgba(0,0,0,0.15)' }} />
-                    </Stack>
-                    <Typography
-                      variant="h6"
-                      sx={{
-                        fontWeight: 800,
-                        lineHeight: 1.2,
-                        display: '-webkit-box',
-                        WebkitLineClamp: 2,
-                        WebkitBoxOrient: 'vertical',
-                        overflow: 'hidden',
-                        mb: .5,
-                      }}
-                    >{p.title}</Typography>
-                    <Typography
-                      variant="body2"
-                      sx={{
-                        opacity: 0.95,
-                        display: '-webkit-box',
-                        WebkitLineClamp: 2,
-                        WebkitBoxOrient: 'vertical',
-                        overflow: 'hidden',
-                      }}
-                    >
-                      {p.excerpt}
-                    </Typography>
-                  </Box>
+            <Grid item xs={12} sm={12} md={6} key={p.slug}>
+              <Card component={RouterLink} to={`/blogs/${p.slug}`} aria-label={`Read: ${p.title}`} sx={{ display: 'flex', textDecoration: 'none', color: 'inherit', borderRadius: 3, overflow: 'hidden', bgcolor: 'background.paper', boxShadow: 1, '&:hover': { boxShadow: 6, transform: 'translateY(-4px)', transition: 'all .2s ease' } }}>
+                <Box sx={{ width: { xs: '40%', md: '38%' }, minWidth: { xs: 120, md: 220 }, position: 'relative' }}>
+                  <CardMedia component="img" image={p.cover} alt={p.title} loading="lazy" onError={(e)=>{ e.currentTarget.src = '/images/abstract/a1.svg'; }} sx={{ width: '100%', height: '100%', objectFit: 'cover', aspectRatio: '4/3' }} />
                 </Box>
+                <CardContent sx={{ flex: '1 1 auto', py: 2, pr: 3 }}>
+                  <Stack direction="row" justifyContent="space-between" alignItems="center">
+                    <Stack spacing={0.5}>
+                      <Stack direction="row" spacing={1} alignItems="center">
+                        <Chip size="small" label={p.tag} variant="outlined" />
+                        <Typography variant="caption" color="text.secondary">{p.read}</Typography>
+                      </Stack>
+                      <Typography variant="h6" sx={{ fontWeight: 800, mt: .5 }}>{p.title}</Typography>
+                    </Stack>
+                    <Box sx={{ display: { xs: 'none', md: 'block' } }}>
+                      <Button size="small" variant="outlined">Read</Button>
+                    </Box>
+                  </Stack>
+
+                  <Typography variant="body2" color="text.secondary" sx={{ mt: 1, display: '-webkit-box', WebkitLineClamp: 3, WebkitBoxOrient: 'vertical', overflow: 'hidden' }}>{p.excerpt}</Typography>
+
+                  <Stack direction="row" spacing={1} sx={{ mt: 2 }}>
+                    <Button component={RouterLink} to={`/blogs/${p.slug}`} size="small">Read more</Button>
+                  </Stack>
+                </CardContent>
               </Card>
             </Grid>
           ))}

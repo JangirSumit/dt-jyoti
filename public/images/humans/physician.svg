@@ -1,0 +1,10 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" width="128" height="128" role="img" aria-label="Physician avatar">
+  <rect width="64" height="64" rx="8" fill="#e8f0ff" />
+  <g transform="translate(6,6)">
+    <circle cx="14" cy="12" r="8" fill="#fff" stroke="#2b6cb0" stroke-width="2" />
+    <rect x="10" y="26" width="8" height="12" rx="2" fill="#fff" stroke="#2b6cb0" stroke-width="2" />
+    <path d="M30 10 C34 12, 36 16, 34 20 C32 24, 28 26, 24 24" fill="none" stroke="#2b6cb0" stroke-width="2" stroke-linecap="round" />
+    <circle cx="36" cy="22" r="4" fill="#fff" stroke="#2b6cb0" stroke-width="2" />
+    <path d="M34 22 L38 26" stroke="#2b6cb0" stroke-width="2" stroke-linecap="round" />
+  </g>
+</svg>
