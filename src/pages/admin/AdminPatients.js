@@ -54,7 +54,8 @@ export default function AdminPatients() {
       setLoadingMeta(true);
       try {
         const token = localStorage.getItem('admintoken');
-        const res = await fetch(`/api/patients/${encodeURIComponent(selected.key)}`, {
+        const idParam = selected.patientUid || selected.key; // prefer patient UID
+        const res = await fetch(`/api/patients/${encodeURIComponent(idParam)}`, {
           headers: token ? { Authorization: `Bearer ${token}` } : {}
         });
         if (res.ok) {
@@ -68,21 +69,21 @@ export default function AdminPatients() {
             activity: data.activity ?? '',
             diet_pref: data.diet_pref ?? '',
             allergies: Array.isArray(data.allergies) ? data.allergies : [],
-            patientId: data.patientId || '',
+            patientId: data.patientId || selected.patientUid || '', // surface ID
             goalTags: Array.isArray(data.goalTags) ? data.goalTags : [],
-            goalOther: data.goalNotes || '' // from server separate field
+            goalOther: data.goalNotes || ''
           });
         } else {
           setPatientMeta({
             conditions: [], height_cm: '', weight_kg: '', age: '',
-            sex: '', activity: '', diet_pref: '', allergies: [], patientId: '',
+            sex: '', activity: '', diet_pref: '', allergies: [], patientId: selected.patientUid || '',
             goalTags: [], goalOther: ''
           });
         }
       } catch {
         setPatientMeta({
           conditions: [], height_cm: '', weight_kg: '', age: '',
-          sex: '', activity: '', diet_pref: '', allergies: [], patientId: '',
+          sex: '', activity: '', diet_pref: '', allergies: [], patientId: selected.patientUid || '',
           goalTags: [], goalOther: ''
         });
       } finally {
@@ -118,7 +119,7 @@ export default function AdminPatients() {
     setSavingMeta(true);
     try {
       const token = localStorage.getItem('admintoken');
-      // Build payload and merge goals
+      const idParam = selected.patientUid || selected.key; // prefer patient UID
       const payload = {
         conditions: patientMeta.conditions,
         height_cm: patientMeta.height_cm,
@@ -129,10 +130,10 @@ export default function AdminPatients() {
         diet_pref: patientMeta.diet_pref,
         allergies: patientMeta.allergies,
         goalTags: patientMeta.goalTags,
-        goalNotes: patientMeta.goalOther, // send separately
+        goalNotes: patientMeta.goalOther,
         name: selected.name, contact: selected.contact, email: selected.email
       };
-      await fetch(`/api/patients/${encodeURIComponent(selected.key)}/meta`, {
+      await fetch(`/api/patients/${encodeURIComponent(idParam)}/meta`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json', ...(token ? { Authorization: `Bearer ${token}` } : {}) },
         body: JSON.stringify(payload)
@@ -144,20 +145,31 @@ export default function AdminPatients() {
     }
   };
 
-  // Build unique patients (unchanged)
+  // Build unique patients (prefer patient_uid over contact/email)
   const patients = useMemo(() => {
     const map = new Map();
     for (const a of appointments) {
-      const key = (a.contact || a.email || '').trim();
+      const uid = (a.patient_uid || '').trim();
+      const fallbackKey = (a.contact || a.email || '').trim();
+      const key = uid || fallbackKey;
       if (!key) continue;
+
       const cur = map.get(key) || {
-        key, name: a.name || '', contact: a.contact || '', email: a.email || '', appts: [],
+        key,                      // grouping key
+        patientUid: uid || '',    // store uid explicitly
+        name: a.name || '',
+        contact: a.contact || '',
+        email: a.email || '',
+        appts: [],
       };
       cur.appts.push(a);
+      if (!cur.patientUid && uid) cur.patientUid = uid; // upgrade when uid becomes available
       if (!cur.name && a.name) cur.name = a.name;
       if (!cur.email && a.email) cur.email = a.email;
+      if (!cur.contact && a.contact) cur.contact = a.contact;
       map.set(key, cur);
     }
+
     const list = Array.from(map.values()).map(p => {
       const sorted = [...p.appts].sort((x, y) => parseDate(y.date) - parseDate(x.date));
       const last = sorted[0];
@@ -182,7 +194,8 @@ export default function AdminPatients() {
     return patients.filter(p =>
       (p.name || '').toLowerCase().includes(q) ||
       (p.contact || '').toLowerCase().includes(q) ||
-      (p.email || '').toLowerCase().includes(q)
+      (p.email || '').toLowerCase().includes(q) ||
+      (p.patientUid || '').toLowerCase().includes(q)   // allow searching by Patient ID
     );
   }, [patients, query]);
 
@@ -225,16 +238,16 @@ export default function AdminPatients() {
               <TableCell>Patient</TableCell>
               <TableCell>Contact</TableCell>
               <TableCell>Email</TableCell>
+              <TableCell>Patient ID</TableCell> {/* NEW */}
               <TableCell align="right">Appointments</TableCell>
               <TableCell>Last visit</TableCell>
               <TableCell>Last slot</TableCell>
-              {/* Removed Status column */}
             </TableRow>
           </TableHead>
           <TableBody>
             {filtered.length === 0 ? (
               <TableRow>
-                <TableCell colSpan={6}>
+                <TableCell colSpan={7}>
                   <Typography sx={{ py: 2, textAlign: 'center' }}>No patients found.</Typography>
                 </TableCell>
               </TableRow>
@@ -253,6 +266,9 @@ export default function AdminPatients() {
                   <TableCell sx={{ maxWidth: 240, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
                     {p.email || '-'}
                   </TableCell>
+                  <TableCell sx={{ fontFamily: 'mono', maxWidth: 220, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                    {p.patientUid || '-'}
+                  </TableCell>
                   <TableCell align="right">
                     <Tooltip title={`${p.paidCount} paid, ${p.unpaidCount} unpaid`}>
                       <span>{p.count}</span>
@@ -260,7 +276,6 @@ export default function AdminPatients() {
                   </TableCell>
                   <TableCell>{p.lastDate || '-'}</TableCell>
                   <TableCell>{p.lastSlot || '-'}</TableCell>
-                  {/* Removed Status cell */}
                 </TableRow>
               ))
             )}
@@ -270,9 +285,7 @@ export default function AdminPatients() {
 
       <Dialog open={Boolean(selected)} onClose={() => setSelected(null)} fullWidth maxWidth="sm">
         <DialogTitle sx={{ p: 2 }}>
-          <Typography variant="h6" component="div" noWrap>
-            Patient details
-          </Typography>
+          <Typography variant="h6" component="div" noWrap>Patient details</Typography>
         </DialogTitle>
         <DialogContent dividers sx={{ overflowX: 'hidden' }}>
           {selected && (
@@ -282,7 +295,7 @@ export default function AdminPatients() {
                 <Typography><strong>Contact:</strong> {selected.contact || '-'}</Typography>
                 {selected.email ? <Typography><strong>Email:</strong> {selected.email}</Typography> : null}
                 <Typography sx={{ color: 'text.secondary', fontSize: '0.8rem', wordBreak: 'break-all' }}>
-                  Patient ID: {patientMeta.patientId || '-'}
+                  Patient ID: {selected.patientUid || patientMeta.patientId || '-'}
                 </Typography>
                 <Typography><strong>Total appointments:</strong> {selected.count} ({selected.paidCount} paid, {selected.unpaidCount} unpaid)</Typography>
               </Stack>

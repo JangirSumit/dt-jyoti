@@ -4,7 +4,7 @@ require('dotenv').config();
 
 const express = require('express');
 const cors = require('cors');
-const { init } = require('./db');
+const { init: initDb } = require('./db');
 
 // FIX: import routers as default exports (functions)
 const appointmentsRouterM = require('./routes/appointments');
@@ -31,8 +31,6 @@ const prescriptionsRouter = asRouter(prescriptionsRouterM, 'prescriptions');
 const aiRouter = asRouter(aiRouterM, 'ai');
 
 (async () => {
-  await init();
-
   const app = express();
   app.use(cors());
   app.use(express.json()); // once is enough
@@ -74,11 +72,13 @@ const aiRouter = asRouter(aiRouterM, 'ai');
   app.use('/api/prescriptions', prescriptionsRouter);
   app.use('/api/ai', aiRouter);                        // FIXED
 
-  const port = Number(process.env.PORT || 4000);
-  console.log('[Twilio configured]', {
-    sid: !!process.env.TWILIO_ACCOUNT_SID,
-    token: !!process.env.TWILIO_AUTH_TOKEN,
-    sender: !!(process.env.TWILIO_FROM || process.env.TWILIO_MESSAGING_SERVICE_SID)
-  });
-  app.listen(port, () => console.log(`API listening on http://localhost:${port}`));
+  try {
+    await initDb();
+    app.listen(process.env.PORT || 4000, () => {
+      console.log(`Server on :${process.env.PORT || 4000}, DB=${(process.env.DB_CLIENT||'sqlite').toUpperCase()}`);
+    });
+  } catch (e) {
+    console.error('DB init failed', e);
+    process.exit(1);
+  }
 })();
